@@ -13,24 +13,26 @@
   defined( '_VALID_XTC' ) or die( 'Direct Access to this location is not allowed.' );
   
 	class bx_customer_notices {
-	public string $code;
-	public string $version;
-	public string $title;
-	public string $description;
-	public int $sort_order;
-	public bool $enabled;
-	private bool $_check;
-	public string $development_status; // 'p' = production ready, 'd' = in development
+		public string $code;
+		public string $version;
+		public string $title;
+		public string $description;
+		public int $sort_order;
+		public bool $enabled;
+		private bool $_check;
+		public string $development_status; // 'p' = production ready, 'd' = in development
+		public bool $is_hot; // Kennzeichnung als "Hot Module" für besondere Hervorhebung in der Admin-Oberfläche
 
-	public function __construct() {
-	  $this->code        = 'bx_customer_notices';
-	  $this->version     = '1.0.0';
-	  $this->title       = MODULE_BX_CUSTOMER_NOTICES_TITLE;
-	  $this->description = MODULE_BX_CUSTOMER_NOTICES_DESC;
-	  $this->sort_order  = defined('MODULE_BX_CUSTOMER_NOTICES_SORT_ORDER') ? MODULE_BX_CUSTOMER_NOTICES_SORT_ORDER : 0;
-	  $this->enabled     = ((defined('MODULE_BX_CUSTOMER_NOTICES_STATUS') && MODULE_BX_CUSTOMER_NOTICES_STATUS == 'True') ? true : false);
-		$this->development_status = 'p';
-  }
+		public function __construct() {
+			$this->code        = 'bx_customer_notices';
+			$this->version     = '1.0.0';
+			$this->title       = MODULE_BX_CUSTOMER_NOTICES_TITLE;
+			$this->description = MODULE_BX_CUSTOMER_NOTICES_DESC;
+			$this->sort_order  = defined('MODULE_BX_CUSTOMER_NOTICES_SORT_ORDER') ? MODULE_BX_CUSTOMER_NOTICES_SORT_ORDER : 0;
+			$this->enabled     = ((defined('MODULE_BX_CUSTOMER_NOTICES_STATUS') && MODULE_BX_CUSTOMER_NOTICES_STATUS == 'True') ? true : false);
+			$this->development_status = 'p';
+			$this->is_hot      = true;
+		}
 
 	/**
      * Returns whether the module is installed.
