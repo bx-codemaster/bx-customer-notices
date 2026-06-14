@@ -149,11 +149,6 @@
     min-height: 220px;
   }
 
-  td.dataTableConfig.col-left a.button {
-    text-decoration: none;
-    font-size: 10px;
-  } 
-
 <?php echo isset($langtabsCss) ? $langtabsCss : ''; ?>
 </style>
 <link rel="stylesheet" href="includes/extra/css/select2.min.css">
