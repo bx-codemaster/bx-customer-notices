@@ -20,6 +20,9 @@
       {else}
         <li><a href="{$login}">{#link_login#}</a></li>
       {/if}
+      {if defined('MODULE_WITHDRAW_STATUS') && $smarty.const.MODULE_WITHDRAW_STATUS == 'true'}
+      <li class="withdraw"><a href="{$withdraw}">{#link_withdraw#}</a></li>
+      {/if}
     </ul>
     {if isset($box_LANGUAGES) && $box_LANGUAGES != ''}<div id="languages">{$box_LANGUAGES}</div>{/if}
   </div>
@@ -39,15 +42,9 @@
       </div>
     {/if}
     <div id="content{if (strpos($smarty.server.PHP_SELF, 'checkout') !== false) && (!strpos($smarty.server.PHP_SELF, 'checkout_express') !== false)}full{/if}">
-      
       {if $home}
         {if isset($BANNER) && $BANNER != ''}<div class="banner_item">{$BANNER}</div>{/if}
       {/if}
-      
-      {* BOF - Timo Paul (mail[at]timopaul[dot]biz) - 2014-06-22 - customerNotices *}
-      {if isset($CUSTOMER_NOTICES)}{$CUSTOMER_NOTICES}{/if}
-      {* EOF - Timo Paul (mail[at]timopaul[dot]biz) - 2014-06-22 - customerNotices *}
-
       {if isset($main_content)}{$main_content}{/if}
     </div>
     {if (!strpos($smarty.server.PHP_SELF, 'checkout') !== false) || (strpos($smarty.server.PHP_SELF, 'checkout_express') !== false)}

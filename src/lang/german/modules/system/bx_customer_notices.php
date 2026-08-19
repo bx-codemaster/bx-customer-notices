@@ -22,7 +22,8 @@
 <details class="bxac-card">
   <summary class="bxac-summary" style="list-style: none;">
   <span class="bxac-arrow">▸</span>
-  <span class="bxac-title">' . xtc_image(DIR_WS_ICONS.'heading/bx_customer_notices.png', 'BX Customer Notices', '', '', 'style="max-height: 32px; vertical-align: middle; margin-right: 8px;"') . 'BX Customer Notices</span>
+  ' . xtc_image(DIR_WS_ICONS.'heading/bx_customer_notices.png', 'BX Customer Notices', '', '', 'style="max-height: 32px; margin: 2px;"') . '
+  <span class="bxac-title">BX Customer Notices</span>
   </summary>
   <div class="bxac-body">
     <h3 style="margin-top: 0;">Kundenhinweise im Shop verwalten</h3>

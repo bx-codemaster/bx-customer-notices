@@ -50,6 +50,7 @@
               {if isset($contact)}<li class="cn_nomobile"><a title="{#link_contact#}" href="{$contact}"><i class="far fa-envelope"></i>{#link_contact#}</a></li>{/if}
               {if isset($imprint)}<li class="cn_nomobile"><a title="{#link_imprint#}" href="{$imprint}"><i class="fas fa-info-circle"></i>{#link_imprint#}</a></li>{/if}
               <li class="cn_nomobile"><a title="{#link_checkout#}" href="{$checkout}"><strong><i class="far fa-credit-card"></i>{#link_checkout#}</strong></a></li>
+              {if isset($box_WITHDRAW)}<li class="cn_nomobile">{$box_WITHDRAW}</li>{/if}
               {if isset($box_CART)}<li class="cart">{$box_CART}</li>{/if}
               {if isset($box_WISHLIST)}<li class="wishlist">{$box_WISHLIST}</li>{/if}
             </ul>

@@ -111,9 +111,7 @@
       <div class="content_big">
   
         {if $error_message}<div class="errormessage my_20">{$error_message}</div>{/if}
-        {* BOF - Timo Paul (mail[at]timopaul[dot]biz) - 2014-06-22 - customerNotices *}
-        {if isset($CUSTOMER_NOTICES)}{$CUSTOMER_NOTICES}{/if}
-        {* EOF - Timo Paul (mail[at]timopaul[dot]biz) - 2014-06-22 - customerNotices *}
+
         {if isset($SLIDER)}
           <div class="slider_row">
             <div class="splide {if count($SLIDER) > 1}splide_slider{else}splide_slider_single{/if}" aria-label="Slider">
@@ -179,7 +177,10 @@
             </div>  
           </div>
         {/if}
- 
+        
+        {* BOF - Timo Paul (mail[at]timopaul[dot]biz) - 2014-06-22 - customerNotices *}
+        {if isset($CUSTOMER_NOTICES)}{$CUSTOMER_NOTICES}{/if}
+        {* EOF - Timo Paul (mail[at]timopaul[dot]biz) - 2014-06-22 - customerNotices *} 
         {if isset($box_GREETING)}{$box_GREETING}{/if}
 
         {if isset($BANNER1) || isset($BANNER2) || isset($BANNER3) || isset($BANNER4)}
@@ -256,9 +257,6 @@
               {if isset($CUSTOMER_NOTICES)}{$CUSTOMER_NOTICES}{/if}
               {* EOF - Timo Paul (mail[at]timopaul[dot]biz) - 2014-06-22 - customerNotices *}
               {if isset($main_content)}{$main_content}{/if}
-              {* BOF - Timo Paul (mail[at]timopaul[dot]biz) - 2014-06-22 - customerNotices *}
-              {if isset($CUSTOMER_NOTICES)}{$CUSTOMER_NOTICES}{/if}
-              {* EOF - Timo Paul (mail[at]timopaul[dot]biz) - 2014-06-22 - customerNotices *}
             </div>
           {else}
             {* BOF - Timo Paul (mail[at]timopaul[dot]biz) - 2014-06-22 - customerNotices *}
