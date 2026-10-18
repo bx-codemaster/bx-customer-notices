@@ -80,3 +80,16 @@
 - improved customers_id handling and admin display, including visible override hints for customer groups and countries
 - added dedicated admin and system language files for German and English, including new texts for customer search and override states
 - replaced problematic zero-date handling with robust empty start and end sentinel dates for better compatibility
+
+## v1.1.0 by benax
+
+- Version skipped, as no changes were made in this version
+
+## v1.2.0 by benax
+
+- added automatic cleanup of obsolete files from previous module versions, run by the module update button of the shop admin, independent of MMLC
+- legacy cleanup now covers all installed templates and removes emptied legacy directories
+- removed obsolete files: header_head hook, templates/xtc5/css/customer_notices.css and templates/tpl_modified_responsive/module/customer_notices/*
+- template files of tpl_modified_responsive moved to module/ and xtc5 CSS renamed to bx_customer_notices.css
+- added FlipClock language files for German and English, installed and removed together with the module
+- added template JavaScript extras and default_section template for tpl_modified_nova

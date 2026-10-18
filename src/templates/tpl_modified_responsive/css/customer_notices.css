@@ -1,3 +1,24 @@
+/*
+  Customer Notices Responsive CSS
+  Responsive styles for customer notices popup and countdown timer
+
+	You must include the file `customer_notices.css` in the `$css_array` array in the file `general_bottom.css.php` 
+	so that the responsive styles are loaded.
+
+	$css_array = array(
+    DIR_TMPL_CSS.'jquery.colorbox.css',
+    DIR_TMPL_CSS.'jquery.sumoselect.css',
+    DIR_TMPL_CSS.'jquery.alertable.css',
+    DIR_TMPL_CSS.'splide.css',
+    DIR_TMPL_CSS.'jquery.viewer.css',
+    DIR_TMPL_CSS.'jquery.mmenulight.css',
+    DIR_TMPL_CSS.'fontawesome-6-custom.css',
+    DIR_TMPL_CSS.'cookieconsent.css',
+    DIR_TMPL_CSS.'customer_notices.css',         // Add this line to include the responsive customer notices CSS
+    DIR_WS_EXTERNAL . 'FlipClock/flip.min.css',  // Add this line to include the FlipClock CSS for the countdown timer
+  );
+*/
+
 .overlay_cn {
 	position: absolute;
 	top: 0;

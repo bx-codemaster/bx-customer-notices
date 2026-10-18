@@ -45,6 +45,11 @@
       {if $home}
         {if isset($BANNER) && $BANNER != ''}<div class="banner_item">{$BANNER}</div>{/if}
       {/if}
+
+      {* BOF BX Customer Notices *}
+      {if isset($CUSTOMER_NOTICES)}{$CUSTOMER_NOTICES}{/if}
+      {* EOF BX Customer Notices *}
+      
       {if isset($main_content)}{$main_content}{/if}
     </div>
     {if (!strpos($smarty.server.PHP_SELF, 'checkout') !== false) || (strpos($smarty.server.PHP_SELF, 'checkout_express') !== false)}

@@ -13,460 +13,478 @@
   defined( '_VALID_XTC' ) or die( 'Direct Access to this location is not allowed.' );
   
 	class bx_customer_notices {
-	public string $code;
-	public string $version;
-	public string $title;
-	public string $description;
-	public int $sort_order;
-	public bool $enabled;
-	private bool $_check;
-	public string $development_status; // 'p' = production ready, 'd' = in development
+		public string $code;
+		public string $version;
+		public string $title;
+		public string $description;
+		public int $sort_order;
+		public bool $enabled;
+		private bool $_check;
+		public string $development_status; // 'p' = production ready, 'd' = in development
+		public array $properties = array();
 
-	public function __construct() {
-	  $this->code        = 'bx_customer_notices';
-	  $this->version     = '1.0.0';
-	  $this->title       = MODULE_BX_CUSTOMER_NOTICES_TITLE;
-	  $this->description = MODULE_BX_CUSTOMER_NOTICES_DESC;
-	  $this->sort_order  = defined('MODULE_BX_CUSTOMER_NOTICES_SORT_ORDER') ? MODULE_BX_CUSTOMER_NOTICES_SORT_ORDER : 0;
-	  $this->enabled     = ((defined('MODULE_BX_CUSTOMER_NOTICES_STATUS') && MODULE_BX_CUSTOMER_NOTICES_STATUS == 'True') ? true : false);
-		$this->development_status = 'p';
-  }
+		public function __construct() {
+			$this->code        = 'bx_customer_notices';
+			$this->version     = '1.2.0';
+			$this->title       = MODULE_BX_CUSTOMER_NOTICES_TITLE;
+			$this->description = MODULE_BX_CUSTOMER_NOTICES_DESC;
+			$this->sort_order  = defined('MODULE_BX_CUSTOMER_NOTICES_SORT_ORDER') ? MODULE_BX_CUSTOMER_NOTICES_SORT_ORDER : 0;
+			$this->enabled     = ((defined('MODULE_BX_CUSTOMER_NOTICES_STATUS') && MODULE_BX_CUSTOMER_NOTICES_STATUS == 'True') ? true : false);
+			$this->development_status = 'p';
 
-	/**
-     * Returns whether the module is installed.
-     * @return bool
-     * 
-     * */
-	public function check(): bool {
-      if (!isset($this->_check)) {
-				if (defined('MODULE_BX_CUSTOMER_NOTICES_STATUS')) {
-          $this->_check = true;
-        } else {
-          $check_query = xtc_db_query("SELECT configuration_value 
-                                         FROM " . TABLE_CONFIGURATION . " 
-																				WHERE configuration_key = 'MODULE_BX_CUSTOMER_NOTICES_STATUS'");
-          $this->_check = (xtc_db_num_rows($check_query) > 0);
-        }
-      }
-      return $this->_check;
-    }
+			// The storefront also instantiates this module without admin constants.
+			if (defined('RUN_MODE_ADMIN') && defined('MODULE_BX_CUSTOMER_NOTICES_STATUS') && defined('MODULE_BX_CUSTOMER_NOTICES_VERSION') && version_compare(MODULE_BX_CUSTOMER_NOTICES_VERSION, $this->version, '<')) {
+				$updateButton = '<a class="button btnbox" onclick="this.blur();" href="' . xtc_href_link(FILENAME_MODULE_EXPORT, 'set=' . (isset($_GET['set']) ? $_GET['set'] : 'system') . '&module=' . $this->code . '&action=update') . '">' . BUTTON_UPDATE . '</a>';
+				$shopVersion = ((defined('DB_VERSION') && strpos(DB_VERSION, 'MOD_') === 0) ? substr(DB_VERSION, 4) : '');
 
-	  
-	/**
-	  * Actions performed when the user clicks the install button.
-	  *
-	  * @return void
-	  */
-	public function install(): void {
-	  $freeId_query = xtc_db_query("SELECT MIN(configuration_group_id+1) AS id 
-			                          					FROM ".TABLE_CONFIGURATION_GROUP." 
-									  						 WHERE (configuration_group_id+1) NOT IN 
-															    (SELECT configuration_group_id FROM ".TABLE_CONFIGURATION_GROUP." WHERE configuration_group_id IS NOT NULL);");
-	  $freeId = xtc_db_fetch_array($freeId_query);
+				// Older module listings execute action=update, but do not render the button_update property.
+				if ($shopVersion == '' || version_compare($shopVersion, '2.0.7.0', '<')) {
+					$this->description .= '<br /><br />' . $updateButton;
+				} else {
+					$this->properties['button_update'] = $updateButton;
+				}
+			}
+		}
 
- 	  $freeSort_query = xtc_db_query("SELECT MIN(sort_order+1) AS sort_order 
-	                                          FROM ".TABLE_CONFIGURATION_GROUP." 
-                                         	 WHERE (sort_order+1) NOT IN (SELECT sort_order FROM ".TABLE_CONFIGURATION_GROUP." WHERE sort_order IS NOT NULL)");
-																	 
-		$freeSort = xtc_db_fetch_array($freeSort_query);
+		/**
+		 * Returns whether the module is installed.
+		 * @return bool
+		 * 
+		 * */
+		public function check(): bool {
+				if (!isset($this->_check)) {
+					if (defined('MODULE_BX_CUSTOMER_NOTICES_STATUS')) {
+						$this->_check = true;
+					} else {
+						$check_query = xtc_db_query("SELECT configuration_value 
+																					FROM " . TABLE_CONFIGURATION . " 
+																					WHERE configuration_key = 'MODULE_BX_CUSTOMER_NOTICES_STATUS'");
+						$this->_check = (xtc_db_num_rows($check_query) > 0);
+					}
+				}
+				return $this->_check;
+			}
 
-	  xtc_db_query("ALTER TABLE ".TABLE_ADMIN_ACCESS." ADD ".$this->code." INTEGER(1) DEFAULT 0");
-	  xtc_db_query("UPDATE ".TABLE_ADMIN_ACCESS." SET ".$this->code." = 1");
- 
-		  
-	  xtc_db_query("INSERT INTO ".TABLE_CONFIGURATION_GROUP." ( 
-														configuration_group_id, 
-														configuration_group_title, 
-														configuration_group_description, 
-														sort_order, 
-														visible) 
-													VALUES ( ".$freeId["id"].", 
-														'BX Customer Notices Konfiguration', 
-														'Modul einstellen und konfigurieren',
-														".$freeSort["sort_order"].", 
-														1)");
+			
+		/**
+			* Actions performed when the user clicks the install button.
+			*
+			* @return void
+			*/
+		public function install(): void {
+			$freeId_query = xtc_db_query("SELECT MIN(configuration_group_id+1) AS id 
+																						FROM ".TABLE_CONFIGURATION_GROUP." 
+																	WHERE (configuration_group_id+1) NOT IN 
+																		(SELECT configuration_group_id FROM ".TABLE_CONFIGURATION_GROUP." WHERE configuration_group_id IS NOT NULL);");
+			$freeId = xtc_db_fetch_array($freeId_query);
 
-	  xtc_db_query("INSERT INTO ".TABLE_CONFIGURATION." (configuration_key, 
-																														 configuration_value, 
-																														 configuration_group_id, 
-																														 sort_order, 
-																														 date_added, 
-																														 use_function, 
-																														 set_function) 
-	                											VALUES ('MODULE_BX_CUSTOMER_NOTICES_STATUS', 
-																														'True', 
-																															'".$freeId["id"]."', 
-																														'1', 
-																														NOW(), 
-																														'', 
-																														'xtc_cfg_select_option(array(\'True\', \'False\'), ')");
-	  
-	  xtc_db_query("INSERT INTO ".TABLE_CONFIGURATION." (configuration_key, 
-																														 configuration_value, 
-																														 configuration_group_id, 
-																														 sort_order, 
-																														 date_added, 
-																														 use_function, 
-																														 set_function) 
-													                VALUES ('MODULE_BX_CUSTOMER_NOTICES_VERSION', 
-																														'".$this->version."', 
-																															'".$freeId["id"]."', 
-																														'2', 
-																														NOW(), 
-																														'', 
-																														'')");
-	  
-	  xtc_db_query("INSERT INTO ".TABLE_CONFIGURATION." (configuration_key, 
-																														 configuration_value, 
-																														 configuration_group_id, 
-																														 sort_order, 
-																														 date_added, 
-																														 use_function, 
-																														 set_function) 
-	                											VALUES ('MODULE_BX_CUSTOMER_NOTICES_CONFIG_ID', 
-																															'".$freeId["id"]."', 
-																															'".$freeId["id"]."', 
-																														'3', 
-																														NOW(), 
-																														'', 
-																														'')");
+			$freeSort_query = xtc_db_query("SELECT MIN(sort_order+1) AS sort_order 
+																							FROM ".TABLE_CONFIGURATION_GROUP." 
+																						WHERE (sort_order+1) NOT IN (SELECT sort_order FROM ".TABLE_CONFIGURATION_GROUP." WHERE sort_order IS NOT NULL)");
+																		
+			$freeSort = xtc_db_fetch_array($freeSort_query);
+
+			xtc_db_query("ALTER TABLE ".TABLE_ADMIN_ACCESS." ADD ".$this->code." INTEGER(1) DEFAULT 0");
+			xtc_db_query("UPDATE ".TABLE_ADMIN_ACCESS." SET ".$this->code." = 1");
 	
-		xtc_db_query ("CREATE TABLE IF NOT EXISTS ".TABLE_BX_CUSTOMER_NOTICES." (
-				customer_notice_id int(10) unsigned NOT NULL AUTO_INCREMENT,
-				customers_id INT(11) DEFAULT NULL,
-				status smallint(1) NOT NULL DEFAULT '0',
-				position int(3) NOT NULL DEFAULT '1',
-				startdate datetime DEFAULT '1000-01-01 00:00:00',
-				enddate datetime DEFAULT '9999-12-31 23:59:59',
-				template varchar(100) DEFAULT '',
-				customers_status varchar(255) DEFAULT '',
-				countries mediumtext DEFAULT NULL,
-				pages text,
-				PRIMARY KEY (customer_notice_id));"
-		);
-	
-		xtc_db_query ("CREATE TABLE IF NOT EXISTS ".TABLE_BX_CUSTOMER_NOTICES_DESCRIPTION." (
-				customer_notice_id int(10) unsigned NOT NULL,
-				languages_id int(10) unsigned NOT NULL,
-				title varchar(255)DEFAULT NULL,
-				description text,
-				PRIMARY KEY (customer_notice_id, languages_id));"
-		);
+				
+			xtc_db_query("INSERT INTO ".TABLE_CONFIGURATION_GROUP." ( 
+															configuration_group_id, 
+															configuration_group_title, 
+															configuration_group_description, 
+															sort_order, 
+															visible) 
+														VALUES ( ".$freeId["id"].", 
+															'BX Customer Notices Konfiguration', 
+															'Modul einstellen und konfigurieren',
+															".$freeSort["sort_order"].", 
+															1)");
 
-		$this->installCountdownLanguageVariables();
-		$this->installFlipclockLanguageFiles();
-	}
+			xtc_db_query("INSERT INTO ".TABLE_CONFIGURATION." (configuration_key, 
+																															configuration_value, 
+																															configuration_group_id, 
+																															sort_order, 
+																															date_added, 
+																															use_function, 
+																															set_function) 
+																					VALUES ('MODULE_BX_CUSTOMER_NOTICES_STATUS', 
+																															'True', 
+																																'".$freeId["id"]."', 
+																															'1', 
+																															NOW(), 
+																															'', 
+																															'xtc_cfg_select_option(array(\'True\', \'False\'), ')");
+			
+			xtc_db_query("INSERT INTO ".TABLE_CONFIGURATION." (configuration_key, 
+																															configuration_value, 
+																															configuration_group_id, 
+																															sort_order, 
+																															date_added, 
+																															use_function, 
+																															set_function) 
+																						VALUES ('MODULE_BX_CUSTOMER_NOTICES_VERSION', 
+																															'".$this->version."', 
+																																'".$freeId["id"]."', 
+																															'2', 
+																															NOW(), 
+																															'', 
+																															'')");
+			
+			xtc_db_query("INSERT INTO ".TABLE_CONFIGURATION." (configuration_key, 
+																															configuration_value, 
+																															configuration_group_id, 
+																															sort_order, 
+																															date_added, 
+																															use_function, 
+																															set_function) 
+																					VALUES ('MODULE_BX_CUSTOMER_NOTICES_CONFIG_ID', 
+																																'".$freeId["id"]."', 
+																																'".$freeId["id"]."', 
+																															'3', 
+																															NOW(), 
+																															'', 
+																															'')");
+		
+			xtc_db_query ("CREATE TABLE IF NOT EXISTS ".TABLE_BX_CUSTOMER_NOTICES." (
+					customer_notice_id int(10) unsigned NOT NULL AUTO_INCREMENT,
+					customers_id INT(11) DEFAULT NULL,
+					status smallint(1) NOT NULL DEFAULT '0',
+					position int(3) NOT NULL DEFAULT '1',
+					startdate datetime DEFAULT '1000-01-01 00:00:00',
+					enddate datetime DEFAULT '9999-12-31 23:59:59',
+					template varchar(100) DEFAULT '',
+					customers_status varchar(255) DEFAULT '',
+					countries mediumtext DEFAULT NULL,
+					pages text,
+					PRIMARY KEY (customer_notice_id));"
+			);
+		
+			xtc_db_query ("CREATE TABLE IF NOT EXISTS ".TABLE_BX_CUSTOMER_NOTICES_DESCRIPTION." (
+					customer_notice_id int(10) unsigned NOT NULL,
+					languages_id int(10) unsigned NOT NULL,
+					title varchar(255)DEFAULT NULL,
+					description text,
+					PRIMARY KEY (customer_notice_id, languages_id));"
+			);
 
-	public function update() {
-		$action = isset($_GET['action']) ? (string)$_GET['action'] : '';
-
-		if (!in_array($action, array('dele_old-Files', 'delete_old_files'), true)) {
-			return '';
+			$this->installCountdownLanguageVariables();
+			$this->installFlipclockLanguageFiles();
 		}
 
-		$result = $this->deleteLegacyModuleFiles();
+		public function update() {
+			$result = $this->deleteLegacyModuleFiles();
 
-		if (!empty($result['failed'])) {
-			return 'Es konnten nicht alle Altdateien des Vorgängermoduls gelöscht werden. Bitte Dateirechte prüfen.';
-		}
+			$this->installCountdownLanguageVariables();
+			$this->installFlipclockLanguageFiles();
 
-		if (empty($result['deleted'])) {
-			return 'Es wurden keine Altdateien des Vorgängermoduls gefunden.';
-		}
-
-		return count($result['deleted']) . ' Altdateien des Vorgängermoduls wurden gelöscht.';
-	}
-
-	private function deleteLegacyModuleFiles(): array {
-		$deletedFiles = array();
-		$failedFiles  = array();
-
-		foreach ($this->getLegacyModuleFiles() as $file) {
-			if (!is_file($file)) {
-				continue;
+			if (empty($result['failed'])) {
+				xtc_db_query("UPDATE " . TABLE_CONFIGURATION . " SET configuration_value = '" . xtc_db_input($this->version) . "', last_modified = NOW() WHERE configuration_key = 'MODULE_BX_CUSTOMER_NOTICES_VERSION'");
 			}
 
-			if (!is_writable($file) || @unlink($file) === false) {
-				$failedFiles[] = $file;
-				continue;
+			if (!empty($result['failed'])) {
+				return MODULE_BX_CUSTOMER_NOTICES_DELETE_OLD_FILES_ERROR;
 			}
 
-			$deletedFiles[] = $file;
-		}
-
-		$this->removeEmptyLegacyDirectories();
-
-		return array(
-			'deleted' => $deletedFiles,
-			'failed' => $failedFiles,
-		);
-	}
-
-	private function getLegacyModuleFiles(): array {
-		$files = array(
-			DIR_FS_ADMIN . 'customers_notice.php',
-			DIR_FS_ADMIN . 'includes/extra/filenames/customers_notice.php',
-			DIR_FS_ADMIN . 'includes/extra/menu/customers_notice.php',
-			DIR_FS_CATALOG . 'includes/external/customers_notice/classes/CustomersNoticeManager.class.php',
-			DIR_FS_CATALOG . 'includes/extra/database_tables/customers_notice.php',
-			DIR_FS_CATALOG . 'includes/extra/filenames/customers_notice.php',
-			DIR_FS_CATALOG . 'includes/extra/header/header_body/customers_notice.php',
-			DIR_FS_CATALOG . 'includes/extra/wysiwyg/customers_notice.php',
-			DIR_FS_CATALOG . 'lang/german/admin/customers_notice.php',
-			DIR_FS_CATALOG . 'lang/english/admin/customers_notice.php',
-		);
-
-		$template = $this->getCurrentTemplate();
-		if ($template !== '') {
-			$files[] = DIR_FS_CATALOG . 'templates/' . $template . '/css/customers_notice.css';
-			$files[] = DIR_FS_CATALOG . 'templates/' . $template . '/module/customers_notice/countdown.html';
-			$files[] = DIR_FS_CATALOG . 'templates/' . $template . '/module/customers_notice/default.html';
-			$files[] = DIR_FS_CATALOG . 'templates/' . $template . '/module/customers_notice/newsletter.html';
-		}
-
-		return $files;
-	}
-
-	private function removeEmptyLegacyDirectories(): void {
-		$directories = array(
-			DIR_FS_CATALOG . 'includes/external/customers_notice/classes',
-			DIR_FS_CATALOG . 'includes/external/customers_notice',
-		);
-
-		$template = $this->getCurrentTemplate();
-		if ($template !== '') {
-			$directories[] = DIR_FS_CATALOG . 'templates/' . $template . '/module/customers_notice';
-		}
-
-		foreach ($directories as $directory) {
-			if (!is_dir($directory) || !is_writable($directory)) {
-				continue;
+			if (empty($result['deleted'])) {
+				return MODULE_BX_CUSTOMER_NOTICES_NO_OLD_FILES;
 			}
 
-			$directoryItems = scandir($directory);
-			if ($directoryItems === false || count($directoryItems) > 2) {
-				continue;
+			return count($result['deleted']) . MODULE_BX_CUSTOMER_NOTICES_OLD_FILES_DELETED;
+		}
+
+		private function deleteLegacyModuleFiles(): array {
+			$deletedFiles = array();
+			$failedFiles  = array();
+
+			foreach ($this->getLegacyModuleFiles() as $file) {
+				if (!is_file($file)) {
+					continue;
+				}
+
+				if (!is_writable($file) || @unlink($file) === false) {
+					$failedFiles[] = $file;
+					continue;
+				}
+
+				$deletedFiles[] = $file;
 			}
 
-			@rmdir($directory);
+			$this->removeEmptyLegacyDirectories();
+
+			return array(
+				'deleted' => $deletedFiles,
+				'failed' => $failedFiles,
+			);
 		}
-	}
 
-	private function installCountdownLanguageVariables(): void {
-		foreach ($this->getCountdownLanguageFiles() as $file => $block) {
-			$contents = '';
+		private function getLegacyModuleFiles(): array {
+			$files = array(
+				DIR_FS_ADMIN . 'customers_notice.php',
+				DIR_FS_ADMIN . 'includes/extra/filenames/customers_notice.php',
+				DIR_FS_ADMIN . 'includes/extra/menu/customers_notice.php',
+				DIR_FS_CATALOG . 'includes/external/customers_notice/classes/CustomersNoticeManager.class.php',
+				DIR_FS_CATALOG . 'includes/extra/database_tables/customers_notice.php',
+				DIR_FS_CATALOG . 'includes/extra/filenames/customers_notice.php',
+				DIR_FS_CATALOG . 'includes/extra/header/header_body/customers_notice.php',
+				DIR_FS_CATALOG . 'includes/extra/wysiwyg/customers_notice.php',
+				DIR_FS_CATALOG . 'includes/extra/header/header_head/bx_customer_notices.php',
+				DIR_FS_CATALOG . 'lang/german/admin/customers_notice.php',
+				DIR_FS_CATALOG . 'lang/english/admin/customers_notice.php',
+				DIR_FS_CATALOG . 'templates/xtc5/css/customer_notices.css',
+				DIR_FS_CATALOG . 'templates/tpl_modified_responsive/module/customer_notices/countdown.html',
+				DIR_FS_CATALOG . 'templates/tpl_modified_responsive/module/customer_notices/default.html',
+				DIR_FS_CATALOG . 'templates/tpl_modified_responsive/module/customer_notices/newsletter.html',
+			);
 
-			if (is_file($file)) {
-				if (!is_readable($file) || !is_writable($file)) {
+			foreach ((array)glob(DIR_FS_CATALOG . 'templates/*', GLOB_ONLYDIR) as $templateDir) {
+				$files[] = $templateDir . '/css/customers_notice.css';
+				$files[] = $templateDir . '/module/customers_notice/countdown.html';
+				$files[] = $templateDir . '/module/customers_notice/default.html';
+				$files[] = $templateDir . '/module/customers_notice/newsletter.html';
+			}
+
+			return $files;
+		}
+
+		private function removeEmptyLegacyDirectories(): void {
+			$directories = array(
+				DIR_FS_CATALOG . 'includes/external/customers_notice/classes',
+				DIR_FS_CATALOG . 'includes/external/customers_notice',
+				DIR_FS_CATALOG . 'templates/tpl_modified_responsive/module/customer_notices',
+			);
+
+			foreach ((array)glob(DIR_FS_CATALOG . 'templates/*', GLOB_ONLYDIR) as $templateDir) {
+				$directories[] = $templateDir . '/module/customers_notice';
+			}
+
+			foreach ($directories as $directory) {
+				if (!is_dir($directory) || !is_writable($directory)) {
+					continue;
+				}
+
+				$directoryItems = scandir($directory);
+				if ($directoryItems === false || count($directoryItems) > 2) {
+					continue;
+				}
+
+				@rmdir($directory);
+			}
+		}
+
+		private function installCountdownLanguageVariables(): void {
+			foreach ($this->getCountdownLanguageFiles() as $file => $block) {
+				$contents = '';
+
+				if (is_file($file)) {
+					if (!is_readable($file) || !is_writable($file)) {
+						continue;
+					}
+
+					$contents = file_get_contents($file);
+					if ($contents === false || strpos($contents, $this->getCountdownLanguageMarkerStart()) !== false) {
+						continue;
+					}
+				} elseif (!is_writable(dirname($file))) {
+					continue;
+				}
+
+				$contents = rtrim((string)$contents);
+				if ($contents !== '') {
+					$contents .= PHP_EOL . PHP_EOL;
+				}
+
+				file_put_contents($file, $contents . $block . PHP_EOL, LOCK_EX);
+			}
+		}
+
+		private function removeCountdownLanguageVariables(): void {
+			$pattern = '/\R?' . preg_quote($this->getCountdownLanguageMarkerStart(), '/') . '\R.*?' . preg_quote($this->getCountdownLanguageMarkerEnd(), '/') . '\R?/s';
+
+			foreach (array_keys($this->getCountdownLanguageFiles()) as $file) {
+				if (!is_file($file) || !is_readable($file) || !is_writable($file)) {
 					continue;
 				}
 
 				$contents = file_get_contents($file);
-				if ($contents === false || strpos($contents, $this->getCountdownLanguageMarkerStart()) !== false) {
+				if ($contents === false || strpos($contents, $this->getCountdownLanguageMarkerStart()) === false) {
 					continue;
 				}
-			} elseif (!is_writable(dirname($file))) {
-				continue;
+
+				$updatedContents = preg_replace($pattern, PHP_EOL, $contents, 1);
+				if ($updatedContents === null) {
+					continue;
+				}
+
+				$updatedContents = trim($updatedContents);
+				if ($updatedContents !== '') {
+					$updatedContents .= PHP_EOL;
+				}
+
+				file_put_contents($file, $updatedContents, LOCK_EX);
 			}
-
-			$contents = rtrim((string)$contents);
-			if ($contents !== '') {
-				$contents .= PHP_EOL . PHP_EOL;
-			}
-
-			file_put_contents($file, $contents . $block . PHP_EOL, LOCK_EX);
-		}
-	}
-
-	private function removeCountdownLanguageVariables(): void {
-		$pattern = '/\R?' . preg_quote($this->getCountdownLanguageMarkerStart(), '/') . '\R.*?' . preg_quote($this->getCountdownLanguageMarkerEnd(), '/') . '\R?/s';
-
-		foreach (array_keys($this->getCountdownLanguageFiles()) as $file) {
-			if (!is_file($file) || !is_readable($file) || !is_writable($file)) {
-				continue;
-			}
-
-			$contents = file_get_contents($file);
-			if ($contents === false || strpos($contents, $this->getCountdownLanguageMarkerStart()) === false) {
-				continue;
-			}
-
-			$updatedContents = preg_replace($pattern, PHP_EOL, $contents, 1);
-			if ($updatedContents === null) {
-				continue;
-			}
-
-			$updatedContents = trim($updatedContents);
-			if ($updatedContents !== '') {
-				$updatedContents .= PHP_EOL;
-			}
-
-			file_put_contents($file, $updatedContents, LOCK_EX);
-		}
-	}
-
-	private function installFlipclockLanguageFiles(): void {
-		foreach ($this->getFlipclockLanguageFiles() as $file => $contents) {
-			if (is_file($file)) {
-				continue;
-			}
-
-			if (!is_writable(dirname($file))) {
-				continue;
-			}
-
-			file_put_contents($file, rtrim($contents) . PHP_EOL, LOCK_EX);
-		}
-	}
-
-	private function removeFlipclockLanguageFiles(): void {
-		foreach (array_keys($this->getFlipclockLanguageFiles()) as $file) {
-			if (!is_file($file) || !is_writable($file)) {
-				continue;
-			}
-
-			@unlink($file);
-		}
-	}
-
-	private function getCountdownLanguageFiles(): array {
-		$template = $this->getCurrentTemplate();
-
-		if ($template === '') {
-			return array();
 		}
 
-		return array(
-			DIR_FS_CATALOG . 'templates/' . $template . '/lang/lang_german.custom' => $this->getCountdownLanguageBlock('german'),
-			DIR_FS_CATALOG . 'templates/' . $template . '/lang/lang_english.custom' => $this->getCountdownLanguageBlock('english'),
-		);
-	}
+		private function installFlipclockLanguageFiles(): void {
+			foreach ($this->getFlipclockLanguageFiles() as $file => $contents) {
+				if (is_file($file)) {
+					continue;
+				}
 
-	private function getFlipclockLanguageFiles(): array {
-		return array(
-			DIR_FS_CATALOG . 'lang/german/flipclock_german.conf' => $this->getFlipclockLanguageBlock('german'),
-			DIR_FS_CATALOG . 'lang/english/flipclock_english.conf' => $this->getFlipclockLanguageBlock('english'),
-		);
-	}
+				if (!is_writable(dirname($file))) {
+					continue;
+				}
 
-	private function getCurrentTemplate(): string {
-		if (defined('CURRENT_TEMPLATE') && CURRENT_TEMPLATE !== '') {
-			return CURRENT_TEMPLATE;
+				file_put_contents($file, rtrim($contents) . PHP_EOL, LOCK_EX);
+			}
 		}
 
-		$templateQuery = xtc_db_query("SELECT configuration_value
-		                                FROM " . TABLE_CONFIGURATION . "
-		                               WHERE configuration_key = 'CURRENT_TEMPLATE'
-		                               LIMIT 1");
+		private function removeFlipclockLanguageFiles(): void {
+			foreach (array_keys($this->getFlipclockLanguageFiles()) as $file) {
+				if (!is_file($file) || !is_writable($file)) {
+					continue;
+				}
 
-		if (xtc_db_num_rows($templateQuery) === 0) {
-			return '';
+				@unlink($file);
+			}
 		}
 
-		$template = xtc_db_fetch_array($templateQuery);
+		private function getCountdownLanguageFiles(): array {
+			$template = $this->getCurrentTemplate();
 
-		return isset($template['configuration_value']) ? (string)$template['configuration_value'] : '';
-	}
+			if ($template === '') {
+				return array();
+			}
 
-	private function getCountdownLanguageBlock(string $language): string {
-		$entries = array(
-			'german' => array(
-				"csn_days = 'Tage'",
-				"csn_std = 'Stunden'",
-				"csn_min = 'Minuten'",
-				"csn_sec = 'Sekunden'",
-			),
-			'english' => array(
-				"csn_days = 'days'",
-				"csn_std = 'hours'",
-				"csn_min = 'minutes'",
-				"csn_sec = 'seconds'",
-			),
-		);
-
-		if (!isset($entries[$language])) {
-			return '';
-		}
-
-		return $this->getCountdownLanguageMarkerStart()
-			. PHP_EOL
-			. implode(PHP_EOL, $entries[$language])
-			. PHP_EOL
-			. $this->getCountdownLanguageMarkerEnd();
-	}
-
-	private function getFlipclockLanguageBlock(string $language): string {
-		$entries = array(
-			'german' => array(
-				"csn_days = 'Tage'",
-				"csn_std = 'Stunden'",
-				"csn_min = 'Minuten'",
-				"csn_sec = 'Sekunden'",
-			),
-			'english' => array(
-				"csn_days = 'days'",
-				"csn_std = 'hours'",
-				"csn_min = 'minutes'",
-				"csn_sec = 'seconds'",
-			),
-		);
-
-		if (!isset($entries[$language])) {
-			return '';
-		}
-
-		return implode(PHP_EOL, $entries[$language]);
-	}
-
-	private function getCountdownLanguageMarkerStart(): string {
-		return '#BOC customer_notices countdown';
-	}
-
-	private function getCountdownLanguageMarkerEnd(): string {
-		return '#EOC customer_notices countdown';
-	}
-	  
-	/**
-	  * Actions performed when the user clicks the uninstall button.
-	  *
-	  * @return void
-	  */
-	  
-	public function remove(): void {
-		$this->removeCountdownLanguageVariables();
-		$this->removeFlipclockLanguageFiles();
-
-	  xtc_db_query("DELETE FROM ".TABLE_CONFIGURATION." WHERE configuration_key in ('".implode("', '", $this->keys())."')");
-		xtc_db_query("DELETE FROM ".TABLE_CONFIGURATION_GROUP." WHERE configuration_group_title = 'BX Customer Notices Konfiguration'");
-	  xtc_db_query("ALTER TABLE ".TABLE_ADMIN_ACCESS." DROP ".$this->code);
-	  xtc_db_query("DROP TABLE IF EXISTS ".TABLE_BX_CUSTOMER_NOTICES);
-	  xtc_db_query("DROP TABLE IF EXISTS ".TABLE_BX_CUSTOMER_NOTICES_DESCRIPTION);
-  }
-
-	public function process(): void { }
-	  
-	/**
-	  * Additional HTML to show during module configuration.
-	  *
-	  * @return array
-	  */
-	  
-	public function display() {
-		return array('text' => '<div style="text-align: center;">'.xtc_button(BUTTON_SAVE).xtc_button_link(BUTTON_CANCEL, xtc_href_link(FILENAME_MODULE_EXPORT, 'set='.$_GET['set'].'&module='.$this->code))."</div>");
-	}
-
-	/**
-	  * Configuration keys used by the module. Used when installing and removing the module.
-	  *
-	  * @return array
-	  */
-	public function keys(): array {
-		$keys = array(
-			'MODULE_BX_CUSTOMER_NOTICES_STATUS',
-			'MODULE_BX_CUSTOMER_NOTICES_CONFIG_ID',
-			'MODULE_BX_CUSTOMER_NOTICES_VERSION',
+			return array(
+				DIR_FS_CATALOG . 'templates/' . $template . '/lang/lang_german.custom' => $this->getCountdownLanguageBlock('german'),
+				DIR_FS_CATALOG . 'templates/' . $template . '/lang/lang_english.custom' => $this->getCountdownLanguageBlock('english'),
 			);
-		return $keys;
-  }	  
-}
-  
+		}
+
+		private function getFlipclockLanguageFiles(): array {
+			return array(
+				DIR_FS_CATALOG . 'lang/german/flipclock_german.conf' => $this->getFlipclockLanguageBlock('german'),
+				DIR_FS_CATALOG . 'lang/english/flipclock_english.conf' => $this->getFlipclockLanguageBlock('english'),
+			);
+		}
+
+		private function getCurrentTemplate(): string {
+			if (defined('CURRENT_TEMPLATE') && CURRENT_TEMPLATE !== '') {
+				return CURRENT_TEMPLATE;
+			}
+
+			$templateQuery = xtc_db_query("SELECT configuration_value
+																			FROM " . TABLE_CONFIGURATION . "
+																		WHERE configuration_key = 'CURRENT_TEMPLATE'
+																		LIMIT 1");
+
+			if (xtc_db_num_rows($templateQuery) === 0) {
+				return '';
+			}
+
+			$template = xtc_db_fetch_array($templateQuery);
+
+			return isset($template['configuration_value']) ? (string)$template['configuration_value'] : '';
+		}
+
+		private function getCountdownLanguageBlock(string $language): string {
+			$entries = array(
+				'german' => array(
+					"csn_days = 'Tage'",
+					"csn_std = 'Stunden'",
+					"csn_min = 'Minuten'",
+					"csn_sec = 'Sekunden'",
+				),
+				'english' => array(
+					"csn_days = 'days'",
+					"csn_std = 'hours'",
+					"csn_min = 'minutes'",
+					"csn_sec = 'seconds'",
+				),
+			);
+
+			if (!isset($entries[$language])) {
+				return '';
+			}
+
+			return $this->getCountdownLanguageMarkerStart()
+				. PHP_EOL
+				. implode(PHP_EOL, $entries[$language])
+				. PHP_EOL
+				. $this->getCountdownLanguageMarkerEnd();
+		}
+
+		private function getFlipclockLanguageBlock(string $language): string {
+			$entries = array(
+				'german' => array(
+					"csn_days = 'Tage'",
+					"csn_std = 'Stunden'",
+					"csn_min = 'Minuten'",
+					"csn_sec = 'Sekunden'",
+				),
+				'english' => array(
+					"csn_days = 'days'",
+					"csn_std = 'hours'",
+					"csn_min = 'minutes'",
+					"csn_sec = 'seconds'",
+				),
+			);
+
+			if (!isset($entries[$language])) {
+				return '';
+			}
+
+			return implode(PHP_EOL, $entries[$language]);
+		}
+
+		private function getCountdownLanguageMarkerStart(): string {
+			return '#BOC customer_notices countdown';
+		}
+
+		private function getCountdownLanguageMarkerEnd(): string {
+			return '#EOC customer_notices countdown';
+		}
+			
+		/**
+			* Actions performed when the user clicks the uninstall button.
+			*
+			* @return void
+			*/
+			
+		public function remove(): void {
+			$this->removeCountdownLanguageVariables();
+			$this->removeFlipclockLanguageFiles();
+
+			xtc_db_query("DELETE FROM ".TABLE_CONFIGURATION." WHERE configuration_key in ('".implode("', '", $this->keys())."')");
+			xtc_db_query("DELETE FROM ".TABLE_CONFIGURATION_GROUP." WHERE configuration_group_title = 'BX Customer Notices Konfiguration'");
+			xtc_db_query("ALTER TABLE ".TABLE_ADMIN_ACCESS." DROP ".$this->code);
+			xtc_db_query("DROP TABLE IF EXISTS ".TABLE_BX_CUSTOMER_NOTICES);
+			xtc_db_query("DROP TABLE IF EXISTS ".TABLE_BX_CUSTOMER_NOTICES_DESCRIPTION);
+		}
+
+		public function process(): void { }
+			
+		/**
+			* Additional HTML to show during module configuration.
+			*
+			* @return array
+			*/
+			
+		public function display() {
+			return array('text' => '<div style="text-align: center;">'.xtc_button(BUTTON_SAVE).xtc_button_link(BUTTON_CANCEL, xtc_href_link(FILENAME_MODULE_EXPORT, 'set='.$_GET['set'].'&module='.$this->code))."</div>");
+		}
+
+		/**
+			* Configuration keys used by the module. Used when installing and removing the module.
+			*
+			* @return array
+			*/
+		public function keys(): array {
+			$keys = array(
+				'MODULE_BX_CUSTOMER_NOTICES_STATUS',
+				'MODULE_BX_CUSTOMER_NOTICES_CONFIG_ID',
+				'MODULE_BX_CUSTOMER_NOTICES_VERSION',
+				);
+			return $keys;
+		}	  
+	}

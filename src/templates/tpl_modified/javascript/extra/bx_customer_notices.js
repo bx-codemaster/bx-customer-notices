@@ -1,11 +1,23 @@
-<?php
-if (defined('MODULE_BX_CUSTOMER_NOTICES_STATUS') && 'True' == MODULE_BX_CUSTOMER_NOTICES_STATUS) {
-  echo '<link rel="stylesheet" type="text/css" href="' . DIR_WS_BASE . 'templates/' . CURRENT_TEMPLATE . '/css/customer_notices.css">' . PHP_EOL;
-  echo '<link rel="stylesheet" type="text/css" href="' . DIR_WS_BASE . DIR_WS_EXTERNAL . 'FlipClock/flip.min.css">' . PHP_EOL;
-  echo '<script src="' . DIR_WS_BASE . DIR_WS_EXTERNAL . 'FlipClock/flip.min.js"></script>' . PHP_EOL;
-  ?>
-<script>
-  'use strict';
+/**
+ * Customer Notices FlipClock Initialization Script
+ * This script initializes the FlipClock countdown timer for customer notices.
+ * 
+ * Make sure to include this script in the `$script_array` array in the file `general_bottom.js.php` 
+ * so that it is loaded properly.
+ * 
+ *   $script_array = array(
+ *   DIR_TMPL_JS.'jquery.mmenulight.js',
+ *   DIR_TMPL_JS.'jquery.colorbox.min.js',
+ *   DIR_TMPL_JS.'jquery.lazysizes.min.js',
+ *   DIR_TMPL_JS.'jquery.viewer.min.js',
+ *   DIR_TMPL_JS.'jquery.easyTabs.js',
+ *   DIR_TMPL_JS.'jquery.alertable.min.js',
+ *   DIR_TMPL_JS.'jquery.sumoselect.min.js',
+ *   DIR_TMPL_JS.'splide.min.js',
+ *   DIR_TMPL_JS.'extra/bx_customer_notices.js',
+ *   DIR_WS_EXTERNAL . 'FlipClock/flip.min.js',
+ *  );
+ */
 
   function csnCustomerNoticeFlipInit(tick) {
     var root = tick && tick.root ? tick.root : null,
@@ -57,6 +69,3 @@ if (defined('MODULE_BX_CUSTOMER_NOTICES_STATUS') && 'True' == MODULE_BX_CUSTOMER
       tick.value = value;
     };
   }
-</script>
-  <?php
-}

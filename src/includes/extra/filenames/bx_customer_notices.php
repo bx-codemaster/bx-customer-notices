@@ -1,5 +1,6 @@
 <?php
-// BOF - Timo Paul (mail[at]timopaul[dot]biz) - 2014-06-22 - customersNotice
+/**
+ * Customer Notices Filename Include
+ * This file defines the filename constant for the Customer Notices module.
+ */
 define('FILENAME_CUSTOMER_NOTICES', 'bx_customer_notices.php');
-// EOF - Timo Paul (mail[at]timopaul[dot]biz) - 2014-06-22 - customersNotice
-?>

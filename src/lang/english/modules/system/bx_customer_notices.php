@@ -22,7 +22,7 @@
 <details class="bxac-card">
   <summary class="bxac-summary" style="list-style: none;">
   <span class="bxac-arrow">▸</span>
-  ' . xtc_image(DIR_WS_ICONS.'heading/bx_customer_notices.png', 'BX Customer Notices', '', '', 'style="max-height: 32px; margin: 2px;"') . '
+  ' . xtc_image(DIR_WS_ICONS.'heading/bx_customer_notices.png', 'BX Customer Notices') . '
   <span class="bxac-title">BX Customer Notices</span>
   </summary>
   <div class="bxac-body">
@@ -45,3 +45,7 @@
 
   define('MODULE_BX_CUSTOMER_NOTICES_VERSION_TITLE', 'Module version');
   define('MODULE_BX_CUSTOMER_NOTICES_VERSION_DESC', 'The current module version.');
+  
+  define('MODULE_BX_CUSTOMER_NOTICES_DELETE_OLD_FILES_ERROR', 'Not all old module files could be deleted. Please check file permissions.');
+  define('MODULE_BX_CUSTOMER_NOTICES_NO_OLD_FILES', 'No old module files were found.');
+  define('MODULE_BX_CUSTOMER_NOTICES_OLD_FILES_DELETED', ' old module files were deleted.');
