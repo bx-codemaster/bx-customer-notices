@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Admin Controller: Customer Notices
  *
@@ -46,12 +47,12 @@
 
 require_once 'includes/application_top.php';
 
-if(!function_exists('xtc_get_country_name')) {
-  require_once(DIR_FS_INC.'xtc_get_country_name.inc.php');
+if (!function_exists('xtc_get_country_name')) {
+  require_once(DIR_FS_INC . 'xtc_get_country_name.inc.php');
 } //added for new feature "restrict to customer country", 10-2021, noRiddle
 
-if(!function_exists('xtc_get_countriesList')) {
-  require_once(DIR_FS_INC.'xtc_get_countries.inc.php');
+if (!function_exists('xtc_get_countriesList')) {
+  require_once(DIR_FS_INC . 'xtc_get_countries.inc.php');
 } //added for new feature "restrict to customer country", 10-2021, noRiddle
 
 // get all customer statuses indexed by status id
@@ -83,17 +84,6 @@ if (isset($_POST['nid'])) {
   $noticeId = (int) $_GET['nid'];
 }
 
-if (!function_exists('getCustomerNoticeActionTokenField')) {
-  function getCustomerNoticeActionTokenField()
-  {
-    if (defined('CSRF_TOKEN_SYSTEM') && CSRF_TOKEN_SYSTEM == 'true' && isset($_SESSION['CSRFName']) && isset($_SESSION['CSRFToken'])) {
-      return xtc_draw_hidden_field($_SESSION['CSRFName'], $_SESSION['CSRFToken']);
-    }
-
-    return '';
-  }
-}
-
 if (!function_exists('renderCustomerNoticeActionButton')) {
   function renderCustomerNoticeActionButton(array $hiddenFields, string $buttonHtml, string $formAttributes = 'style="display:inline;margin:0;"')
   {
@@ -106,7 +96,6 @@ if (!function_exists('renderCustomerNoticeActionButton')) {
       'post',
       $formAttributes
     );
-    $form .= getCustomerNoticeActionTokenField();
 
     foreach ($hiddenFields as $fieldName => $fieldValue) {
       $form .= xtc_draw_hidden_field($fieldName, (string) $fieldValue);
@@ -156,7 +145,7 @@ switch ($action) {
     $notice['pages'] = array();
     $notice['countries'] = array();
     $notice['lang'] = array();
-    
+
     // get values from request
     if (key_exists('customer_notice_id', $_POST)) {
       $notice['customer_notice_id'] = $_POST['customer_notice_id'];
@@ -220,10 +209,10 @@ switch ($action) {
     if ($requestDescription === '') {
       $messageStack->add(ERROR_MISSING_DESCRIPTION, 'error');
     }
-    
+
     //BOC different format because of datetimepicker, noRiddle
     $datetimeFormat2 = '#^[0-9]{4}-[0-9]{1,2}-[0-9]{1,2}\s[0-9]{1,2}:[0-9]{1,2}[:]*[0-9]{0,2}$#'; //new format because of use of datepicker without seconds, noRiddle
-    
+
     if ($requestStartdate !== '' && !preg_match($datetimeFormat2, $requestStartdate)) {
       $messageStack->add(ERROR_INVALID_STARTDATE, 'error');
     }
@@ -260,7 +249,7 @@ switch ($action) {
       'pages'             => implode(',', $notice['pages']),
       'countries'         => implode(',', $notice['countries']) //for new feature "restrict to customer country", 10-2021, noRiddle
     );
-    
+
     xtc_db_perform(
       TABLE_BX_CUSTOMER_NOTICES,
       $sqlData,
@@ -274,20 +263,21 @@ switch ($action) {
 
     foreach ($notice['lang'] as $languages_id => $lang) {
       $csn_lng_entr_qu = xtc_db_query("SELECT * 
-                                         FROM ".TABLE_BX_CUSTOMER_NOTICES_DESCRIPTION." 
-                                        WHERE languages_id = ".(int)$languages_id."
-                                          AND customer_notice_id = ".(int)$notice['customer_notice_id']);
-      
-      $sqlData = array('title' => $lang['title'],
-                       'description' => $lang['description'],
-                       'languages_id' => (int)$languages_id
-                      );
+                                         FROM " . TABLE_BX_CUSTOMER_NOTICES_DESCRIPTION . " 
+                                        WHERE languages_id = " . (int)$languages_id . "
+                                          AND customer_notice_id = " . (int)$notice['customer_notice_id']);
 
-      if(xtc_db_num_rows($csn_lng_entr_qu) == 0) {
+      $sqlData = array(
+        'title' => $lang['title'],
+        'description' => $lang['description'],
+        'languages_id' => (int)$languages_id
+      );
+
+      if (xtc_db_num_rows($csn_lng_entr_qu) == 0) {
         $sqlData['customer_notice_id'] = (int)$notice['customer_notice_id'];
         xtc_db_perform(TABLE_BX_CUSTOMER_NOTICES_DESCRIPTION, $sqlData);
       } else {
-        xtc_db_perform(TABLE_BX_CUSTOMER_NOTICES_DESCRIPTION, $sqlData, 'update', 'customer_notice_id = '.(int)$notice['customer_notice_id'].' AND languages_id = '.(int)$languages_id);
+        xtc_db_perform(TABLE_BX_CUSTOMER_NOTICES_DESCRIPTION, $sqlData, 'update', 'customer_notice_id = ' . (int)$notice['customer_notice_id'] . ' AND languages_id = ' . (int)$languages_id);
       }
     }
 
@@ -297,7 +287,7 @@ switch ($action) {
       $action = 'edit';
     }
     break;
-    
+
   // update status
   case 'updatestatus':
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -305,65 +295,65 @@ switch ($action) {
     }
 
     if (key_exists('flag', $_POST) && xtc_not_null($_POST['flag']) && $noticeId > 0) {
-            $stmt = 'UPDATE ' . TABLE_BX_CUSTOMER_NOTICES . ' ' .
-              'SET status = ' . (int) $_POST['flag'] . ' ' .
-              'WHERE customer_notice_id = ' . $noticeId;
+      $stmt = 'UPDATE ' . TABLE_BX_CUSTOMER_NOTICES . ' ' .
+        'SET status = ' . (int) $_POST['flag'] . ' ' .
+        'WHERE customer_notice_id = ' . $noticeId;
       xtc_db_query($stmt);
-            xtc_redirect(xtc_href_link(FILENAME_CUSTOMER_NOTICES, xtc_get_all_get_params(array('nid', 'action', 'flag'))));
+      xtc_redirect(xtc_href_link(FILENAME_CUSTOMER_NOTICES, xtc_get_all_get_params(array('nid', 'action', 'flag'))));
     }
     break;
-    
+
   // delete
-  case 'delete-confirm': 
+  case 'delete-confirm':
     if ($_SERVER['REQUEST_METHOD'] !== 'POST' || $noticeId <= 0) {
       xtc_redirect(xtc_href_link(FILENAME_CUSTOMER_NOTICES, xtc_get_all_get_params(array('nid', 'action', 'flag'))));
     }
 
-        $stmt = 'DELETE FROM ' . TABLE_BX_CUSTOMER_NOTICES . ' ' .
-            'WHERE customer_notice_id = ' . $noticeId;
+    $stmt = 'DELETE FROM ' . TABLE_BX_CUSTOMER_NOTICES . ' ' .
+      'WHERE customer_notice_id = ' . $noticeId;
     xtc_db_query($stmt);
-        $stmt = 'DELETE FROM ' . TABLE_BX_CUSTOMER_NOTICES_DESCRIPTION . ' ' .
-            'WHERE customer_notice_id = ' . $noticeId;
+    $stmt = 'DELETE FROM ' . TABLE_BX_CUSTOMER_NOTICES_DESCRIPTION . ' ' .
+      'WHERE customer_notice_id = ' . $noticeId;
     xtc_db_query($stmt);
-        xtc_redirect(xtc_href_link(FILENAME_CUSTOMER_NOTICES, xtc_get_all_get_params(array('nid', 'action', 'flag'))));
-    
+    xtc_redirect(xtc_href_link(FILENAME_CUSTOMER_NOTICES, xtc_get_all_get_params(array('nid', 'action', 'flag'))));
+
     break;
-  
+
   // update position
-  case 'posup': 
-  case 'posdown': 
+  case 'posup':
+  case 'posdown':
     if ($_SERVER['REQUEST_METHOD'] !== 'POST' || $noticeId <= 0) {
       xtc_redirect(xtc_href_link(FILENAME_CUSTOMER_NOTICES, xtc_get_all_get_params(array('nid', 'action'))));
     }
 
-        $stmt = 'UPDATE ' . TABLE_BX_CUSTOMER_NOTICES . ' ' .
-            'SET position = position ' . ('posup' == $action ? '+' : '-') . ' 1 ' .
-            'WHERE customer_notice_id = ' . $noticeId;
+    $stmt = 'UPDATE ' . TABLE_BX_CUSTOMER_NOTICES . ' ' .
+      'SET position = position ' . ('posup' == $action ? '+' : '-') . ' 1 ' .
+      'WHERE customer_notice_id = ' . $noticeId;
     xtc_db_query($stmt);
-        xtc_redirect(xtc_href_link(FILENAME_CUSTOMER_NOTICES, xtc_get_all_get_params(array('nid', 'action'))));
+    xtc_redirect(xtc_href_link(FILENAME_CUSTOMER_NOTICES, xtc_get_all_get_params(array('nid', 'action'))));
     break;
 }
 
 $langtabs = '';
 $langtabsCss = '';
 if (in_array($action, array('new', 'edit'))) {
-	$langtabsStyle = 'border: 1px solid #aaaaaa; padding: 5px; width: 850px; margin-top: -1px; margin-bottom: 10px; float: left; background-color: #F3F3F3;';
-	$langtabsCss .= '.customer-notices-langtabs .tablangmenu{display:none;}';
-	if (USE_ADMIN_LANG_TABS != 'false') {
-		$langtabs = '<div class="tablangmenu"><ul>';
-	}
-	foreach ($languages as $i => $l) {
-		if (USE_ADMIN_LANG_TABS != 'false') {
+  $langtabsStyle = 'border: 1px solid #aaaaaa; padding: 5px; width: 850px; margin-top: -1px; margin-bottom: 10px; float: left; background-color: #F3F3F3;';
+  $langtabsCss .= '.customer-notices-langtabs .tablangmenu{display:none;}';
+  if (USE_ADMIN_LANG_TABS != 'false') {
+    $langtabs = '<div class="tablangmenu"><ul>';
+  }
+  foreach ($languages as $i => $l) {
+    if (USE_ADMIN_LANG_TABS != 'false') {
       $tabtmp = "'tab_lang_{$i}',";
-			$langtabs .= '<li onclick="showTab('. $tabtmp . count($languages) . ')" style="cursor: pointer;" id="tabselect_' . $i . '">' . xtc_image(DIR_WS_LANGUAGES . $l['directory'] . '/admin/images/' . $l['image'], $l['name']) . ' ' . $l['name'] . '</li>';
-			$langtabsCss .= '.js .customer-notices-langtabs #tab_lang_' . $i . '{display: ' . (0 == $i ? 'block' : 'none') . '; ' . $langtabsStyle . '}';
-		}
-		$langtabsCss .= '.customer-notices-langtabs #tab_lang_' . $i . '{display: block; ' . $langtabsStyle . '}';
-	}
-	if (USE_ADMIN_LANG_TABS != 'false') {
-		$langtabs .= '</ul></div>';
-		$langtabsCss .= '.js .customer-notices-langtabs .tablangmenu{display:block;}';
-	}
+      $langtabs .= '<li onclick="showTab(' . $tabtmp . count($languages) . ')" style="cursor: pointer;" id="tabselect_' . $i . '">' . xtc_image(DIR_WS_LANGUAGES . $l['directory'] . '/admin/images/' . $l['image'], $l['name']) . ' ' . $l['name'] . '</li>';
+      $langtabsCss .= '.js .customer-notices-langtabs #tab_lang_' . $i . '{display: ' . (0 == $i ? 'block' : 'none') . '; ' . $langtabsStyle . '}';
+    }
+    $langtabsCss .= '.customer-notices-langtabs #tab_lang_' . $i . '{display: block; ' . $langtabsStyle . '}';
+  }
+  if (USE_ADMIN_LANG_TABS != 'false') {
+    $langtabs .= '</ul></div>';
+    $langtabsCss .= '.js .customer-notices-langtabs .tablangmenu{display:block;}';
+  }
 }
 
 require DIR_WS_INCLUDES . 'head.php';
@@ -380,51 +370,67 @@ if (USE_WYSIWYG == 'true') {
 }
 ?>
 </head>
-<body>
-    <!-- header //-->
-    <?php require(DIR_WS_INCLUDES . 'header.php'); ?>
-    <!-- header_eof //-->
-    <!-- body //-->
-    <table class="tableBody">
-      <tr>
-        <?php //left_navigation
-        if (USE_ADMIN_TOP_MENU == 'false') {
-          echo '<td class="columnLeft2">'.PHP_EOL;
-          echo '<!-- left_navigation //-->'.PHP_EOL;       
-          require_once(DIR_WS_INCLUDES . 'column_left.php');
-        }
-        ?>
-        <!-- body_text //--> 
-        <td class="boxCenter">
-          <div class="pageHeadingImage"><?php echo xtc_image(DIR_WS_ICONS.'heading/bx_customer_notices.png', HEADING_BX_TITLE, '', '', 'style="max-height: 40px;"'); ?></div>
-          <div class="pageHeading flt-l">
-            <?php echo HEADING_BX_TITLE; ?>
-            <div class="main pdg2"><?php echo HEADING_BX_SUBTITLE; ?>
-            </div>
-          </div>
 
-          <div class="main flt-r pdg2 mrg5" style="margin-left:20px;">
-            Version: <?php echo MODULE_BX_CUSTOMER_NOTICES_VERSION; ?><br>
-            Original version by TimoPaul<br />
-            Contributions: karsta (kgd), noRiddle
+<body>
+  <!-- header //-->
+  <?php require(DIR_WS_INCLUDES . 'header.php'); ?>
+  <!-- header_eof //-->
+  <!-- body //-->
+  <table class="tableBody">
+    <tr>
+      <?php //left_navigation
+      if (USE_ADMIN_TOP_MENU == 'false') {
+        echo '<td class="columnLeft2">' . PHP_EOL;
+        echo '<!-- left_navigation //-->' . PHP_EOL;
+        require_once(DIR_WS_INCLUDES . 'column_left.php');
+      }
+      ?>
+      <!-- body_text //-->
+      <td class="boxCenter">
+
+        <div class="pageHeadingImage">
+          <?php echo xtc_image(DIR_WS_ICONS . 'heading/bx_customer_notices.png', HEADING_BX_TITLE, '', '', 'style="max-height: 40px;"'); ?>
+        </div>
+
+        <div class="pageHeading flt-l">
+          <?php echo HEADING_BX_TITLE; ?>
+          <div class="main pdg2">
+            <?php echo HEADING_BX_SUBTITLE; ?>
           </div>
-<?php if (in_array($action, array('new', 'edit'))) { ?>
+        </div>
+
+        <div class="main flt-r pdg2 mrg5" style="margin-left:20px;">
+          Version: <?php echo MODULE_BX_CUSTOMER_NOTICES_VERSION; ?>
+        </div>
+
+        <?php if (in_array($action, array('new', 'edit'))) { ?>
           <table class="tableCenter">
             <tr>
               <td class="boxCenterLeft">
+                <div class="bx-headboard">
+                  <div class="main">
+                    <strong>
+                    <?php
+                      if (isset($notice["lang"][$_SESSION['languages_id']]["title"])  && '' != trim($notice["lang"][$_SESSION['languages_id']]["title"])) {
+                        echo sprintf(HEADING_BX_SUBTITLE_EDIT_NOTICE, $notice["lang"][$_SESSION['languages_id']]["title"]);
+                      } else {
+                        echo HEADING_BX_SUBTITLE_NEW_NOTICE;
+                      }
+                    ?>
+                    </strong>
+                  </div>
+                </div>
                 <?php
-                  $update = 1 < count($notice) && key_exists('customer_notice_id', $notice) && '' != trim($notice['customer_notice_id']);
-                  echo xtc_draw_form('notice', FILENAME_CUSTOMER_NOTICES, 'action=' . ($update ? 'update' : 'insert'), 'POST') . PHP_EOL;
-                  echo xtc_draw_hidden_field('action', ($update ? 'update' : 'insert')) . PHP_EOL;
-                  if ($update)
-                  {
-                    echo xtc_draw_hidden_field('customer_notice_id', (string) $notice['customer_notice_id']) . PHP_EOL;
-                  }
+                $update = 1 < count($notice) && key_exists('customer_notice_id', $notice) && '' != trim($notice['customer_notice_id']);
+                echo xtc_draw_form('notice', FILENAME_CUSTOMER_NOTICES, 'action=' . ($update ? 'update' : 'insert'), 'POST') . PHP_EOL;
+                echo xtc_draw_hidden_field('action', ($update ? 'update' : 'insert')) . PHP_EOL;
+                if ($update) {
+                  echo xtc_draw_hidden_field('customer_notice_id', (string) $notice['customer_notice_id']) . PHP_EOL;
+                }
 
-                  include('includes/lang_tabs.php');
-                  foreach ($languages as $i => $l)
-                  {
-                    $lng_image = xtc_image(DIR_WS_LANGUAGES . $l['directory'] . '/admin/images/' . $l['image'], $l['name']);
+                include('includes/lang_tabs.php');
+                foreach ($languages as $i => $l) {
+                  $lng_image = xtc_image(DIR_WS_LANGUAGES . $l['directory'] . '/admin/images/' . $l['image'], $l['name']);
                 ?>
                   <div id="tab_lang_<?php echo $i; ?>">
                     <div class="main" style="background: #FFCC33; padding: 3px; line-height: 20px;">
@@ -437,7 +443,7 @@ if (USE_WYSIWYG == 'true') {
                     </div>
                   </div>
                 <?php
-                  }
+                }
                 ?>
 
                 <table class="tableConfig">
@@ -445,11 +451,11 @@ if (USE_WYSIWYG == 'true') {
                     <td class="dataTableConfig col-left"><strong><?php echo LABEL_TXT_STATUS; ?></strong></td>
                     <td class="dataTableConfig col-middle">
                       <?php
-                        $values = array(
-                          array('id' => 0, 'text' => NO),
-                          array('id' => 1, 'text' => YES),
-                        );
-                        echo xtc_draw_pull_down_menu('status', $values, (isset($notice['status']) ? $notice['status'] : ''));
+                      $values = array(
+                        array('id' => 0, 'text' => NO),
+                        array('id' => 1, 'text' => YES),
+                      );
+                      echo xtc_draw_pull_down_menu('status', $values, (isset($notice['status']) ? $notice['status'] : ''));
                       ?>
                     </td>
                     <td class="dataTableConfig col-left"><strong><?php echo LABEL_TXT_POSITION; ?></strong></td>
@@ -477,15 +483,15 @@ if (USE_WYSIWYG == 'true') {
                     <td class="dataTableConfig col-left"><strong><?php echo LABEL_TXT_TEMPLATE; ?></strong></td>
                     <td class="dataTableConfig col-middle">
                       <?php
-                        $path = DIR_FS_CATALOG . 'templates/' . CURRENT_TEMPLATE . '/module/customer_notices/';
-                        $templates = array();
-                        foreach (glob($path . '*.html') as $file) {
-                          $templates[] = array(
-                            'id'   => basename($file),
-                            'text' => basename($file)
-                          );
-                        }
-                        echo xtc_draw_pull_down_menu('template', $templates, (isset($notice['template']) ? $notice['template'] : ''));
+                      $path = DIR_FS_CATALOG . 'templates/' . CURRENT_TEMPLATE . '/module/customer_notices/';
+                      $templates = array();
+                      foreach (glob($path . '*.html') as $file) {
+                        $templates[] = array(
+                          'id'   => basename($file),
+                          'text' => basename($file)
+                        );
+                      }
+                      echo xtc_draw_pull_down_menu('template', $templates, (isset($notice['template']) ? $notice['template'] : ''));
                       ?>
                     </td>
                     <td class="dataTableConfig col-right" colspan="2"><?php echo LABEL_TXT_TEMPLATE_HINT; ?></td>
@@ -496,19 +502,19 @@ if (USE_WYSIWYG == 'true') {
                     </td>
                     <td class="dataTableConfig col-middle">
                       <?php
-                        $selectedCustomer = getCustomerNoticeCustomerById(isset($notice['customers_id']) ? (int) $notice['customers_id'] : 0);
-                        $selectedCustomerId    = isset($notice['customers_id']) ? (int) $notice['customers_id'] : 0;
-                        $selectedCustomerLabel = $selectedCustomerId > 0 ? getCustomerNoticeCustomerLabel(
-                          !empty($selectedCustomer)
-                            ? $selectedCustomer
-                            : array('customers_id' => $selectedCustomerId)
-                        ) : '';
-                        echo '<input type="hidden" name="customers_id" id="customer-notices-customer-id" value="' . encode_htmlspecialchars(($selectedCustomerId > 0 ? (string) $selectedCustomerId : '')) . '">';
+                      $selectedCustomer = getCustomerNoticeCustomerById(isset($notice['customers_id']) ? (int) $notice['customers_id'] : 0);
+                      $selectedCustomerId    = isset($notice['customers_id']) ? (int) $notice['customers_id'] : 0;
+                      $selectedCustomerLabel = $selectedCustomerId > 0 ? getCustomerNoticeCustomerLabel(
+                        !empty($selectedCustomer)
+                          ? $selectedCustomer
+                          : array('customers_id' => $selectedCustomerId)
+                      ) : '';
+                      echo '<input type="hidden" name="customers_id" id="customer-notices-customer-id" value="' . encode_htmlspecialchars(($selectedCustomerId > 0 ? (string) $selectedCustomerId : '')) . '">';
                       ?>
                       <select id="customer-notices-customer-search" style="width: 100%; max-width: 420px;">
                         <option value=""></option>
                         <?php if ($selectedCustomerId > 0) { ?>
-                        <option value="<?php echo $selectedCustomerId; ?>" selected="selected"><?php echo htmlspecialchars($selectedCustomerLabel, ENT_QUOTES, 'UTF-8'); ?></option>
+                          <option value="<?php echo $selectedCustomerId; ?>" selected="selected"><?php echo htmlspecialchars($selectedCustomerLabel, ENT_QUOTES, 'UTF-8'); ?></option>
                         <?php } ?>
                       </select>
                     </td>
@@ -525,11 +531,10 @@ if (USE_WYSIWYG == 'true') {
                       </h4>
 
                       <?php
-                        echo xtc_draw_selection_field('all_cst', 'checkbox', '', '', '', 'id="chck-all-cst"') . ' <label for="chck-all-cst">' . TEXT_PAGES_SELECT_ALL . '</label><br />';
-                        foreach ($customers_statuses_array as $g)
-                        {
-                          echo xtc_draw_selection_field('customers_status[]', 'checkbox', $g['id'], in_array($g['id'], $notice['customers_status']), '', 'id="cst-'.$g['id'].'"') . ' <label for="cst-'.$g['id'].'">' . $g['text'] . '</label><br />';
-                        }
+                      echo xtc_draw_selection_field('all_cst', 'checkbox', '', '', '', 'id="chck-all-cst"') . ' <label for="chck-all-cst">' . TEXT_PAGES_SELECT_ALL . '</label><br />';
+                      foreach ($customers_statuses_array as $g) {
+                        echo xtc_draw_selection_field('customers_status[]', 'checkbox', $g['id'], in_array($g['id'], $notice['customers_status']), '', 'id="cst-' . $g['id'] . '"') . ' <label for="cst-' . $g['id'] . '">' . $g['text'] . '</label><br />';
+                      }
                       ?>
                     </td>
                     <td class="dataTableConfig col-middle">
@@ -539,8 +544,9 @@ if (USE_WYSIWYG == 'true') {
                       </h4>
 
                       <?php
-                        echo xtc_draw_selection_field('all_pgs', 'checkbox', '', '', '', 'id="chck-all-pgs"') . ' <label for="chck-all-pgs">' . TEXT_PAGES_SELECT_ALL . '</label><br />';
-                        foreach (array(
+                      echo xtc_draw_selection_field('all_pgs', 'checkbox', '', '', '', 'id="chck-all-pgs"') . ' <label for="chck-all-pgs">' . TEXT_PAGES_SELECT_ALL . '</label><br />';
+                      foreach (
+                        array(
                           'index',
                           'category',
                           'product_info',
@@ -548,9 +554,10 @@ if (USE_WYSIWYG == 'true') {
                           'shopping_cart',
                           'account',
                           'checkout',
-                        ) as $p) {
-                          echo xtc_draw_selection_field('pages[]', 'checkbox', $p, in_array($p, $notice['pages']), '', 'id="pg-'.$p.'"') . ' <label for="pg-'.$p.'">' . constant('FIELD_VALUE_PAGES_' . strtoupper($p)) . '</label><br />';
-                        }
+                        ) as $p
+                      ) {
+                        echo xtc_draw_selection_field('pages[]', 'checkbox', $p, in_array($p, $notice['pages']), '', 'id="pg-' . $p . '"') . ' <label for="pg-' . $p . '">' . constant('FIELD_VALUE_PAGES_' . strtoupper($p)) . '</label><br />';
+                      }
                       ?>
                     </td>
                     <td class="dataTableConfig col-right">
@@ -567,17 +574,17 @@ if (USE_WYSIWYG == 'true') {
                         <a href="#" id="customer-notices-country-clear"><?php echo TEXT_COUNTRIES_CLEAR; ?></a>
                       </div>
                       <select name="countries[]" id="customer-notices-countries" class="customer-notices-country-select" multiple="multiple" size="12">
-                      <?php
+                        <?php
                         foreach ($csn_countries as $csn_cntr) {
-                          echo '<option value="'.(int)$csn_cntr['countries_id'].'"'.(in_array($csn_cntr['countries_id'], $notice['countries']) ? ' selected="selected"' : '').'>' . getCustomerNoticeCountryDisplayName($csn_cntr) . '</option>';
+                          echo '<option value="' . (int)$csn_cntr['countries_id'] . '"' . (in_array($csn_cntr['countries_id'], $notice['countries']) ? ' selected="selected"' : '') . '>' . getCustomerNoticeCountryDisplayName($csn_cntr) . '</option>';
                         }
-                      ?>
+                        ?>
                       </select>
                     </td>
                   </tr>
                   <tr>
                     <td class="dataTableConfig col-left" colspan="3">
-                      <a class="button" onclick="this.blur();" href="<?php echo xtc_href_link(FILENAME_CUSTOMER_NOTICES, xtc_get_all_get_params(array('action'))); ?>"><?php echo BUTTON_CANCEL; ?></a>
+                      <a class="button" onclick="this.blur();" href="<?php echo xtc_href_link(FILENAME_CUSTOMER_NOTICES, xtc_get_all_get_params(array('action'))); ?>" style="text-decoration:none;font-size:10px;"><?php echo BUTTON_CANCEL; ?></a>
                       <input type="submit" name="update" class="button" onclick="this.blur();" value="<?php echo $update ? BUTTON_UPDATE : BUTTON_INSERT; ?>" />
                       <input type="submit" name="save" class="button" onclick="this.blur();" value="<?php echo BUTTON_SAVE; ?>" />
                     </td>
@@ -585,359 +592,373 @@ if (USE_WYSIWYG == 'true') {
                 </table>
                 </form>
 
-                </td>
-                <td class="boxRight">
-                  <?php
-                    $heading[]  = array('text' => '<b>' . HEADING_BX_TITLE . '</b>');
-                    $contents[] = array('text' => TEXT_NO_CUSTOMER_NOTICES);
-                    $box = new box;
-                    echo $box->infoBox($heading, $contents);
-                  ?>
-                </td>
-              </tr>
+              </td>
+              <td class="boxRight">
+                <?php
+                $heading[]  = array('text' => '<b>' . HEADING_BX_TITLE . '</b>');
+                $contents[] = array('text' => TEXT_NO_CUSTOMER_NOTICES);
+                $box = new box;
+                echo $box->infoBox($heading, $contents);
+                ?>
+              </td>
+            </tr>
           </table>
-<?php } else { ?>
-  <table class="tableCenter">
-    <tr>
-      <td class="boxCenterLeft">
-        <div id="headboard">
-          <div class="main"><strong><?php echo TEXT_SEARCH_FILTERS; ?></strong></div>
-          <div class="main">
-            <?php echo xtc_draw_form('status', FILENAME_CUSTOMER_NOTICES, '', 'get'); ?>
-            <?php
-            $select_data = array(
-                  array('id' => '', 'text' => TEXT_ALL),
-                  array('id' => '1', 'text' => TEXT_ACTIVE),
-                  array('id' => '0', 'text' => TEXT_INACTIVE),
-                );
-                echo HEADING_BX_TITLE_STATUS . ' ';
-                echo xtc_draw_pull_down_menu('status', $select_data, isset($_GET['status']) ? $_GET['status'] : '', 'onChange="this.form.submit();" style="min-width: 150px;"').'</form>';
-            ?>
-          </div>
-          <div class="main">
-            <?php
-              echo xtc_draw_form('search', FILENAME_CUSTOMER_NOTICES, '', 'get') . HEADING_BX_TITLE_SEARCH . ' ' . xtc_draw_input_field('search', isset($_GET['search']) ? $_GET['search'] : '').'</form>';
-            ?>
-          </div>
-        </div>
-        <table class="tableBoxCenter collapse">
-          <tr class="dataTableHeadingRow">
-            <td class="dataTableHeadingContent"><?php echo TABLE_HEADING_TXT_ID . xtc_sorting(FILENAME_CUSTOMER_NOTICES, 'customer_notice_id'); ?></td>
-            <td class="dataTableHeadingContent"><?php echo TABLE_HEADING_TXT_TITLE . xtc_sorting(FILENAME_CUSTOMER_NOTICES, 'title'); ?></td>
-            <td class="dataTableHeadingContent"><?php echo TABLE_HEADING_TXT_STATUS . xtc_sorting(FILENAME_CUSTOMER_NOTICES, 'status'); ?></td>
-            <td class="dataTableHeadingContent" colspan="2"><?php echo TABLE_HEADING_TXT_POSITION . xtc_sorting(FILENAME_CUSTOMER_NOTICES, 'position'); ?></td>
-            <td class="dataTableHeadingContent"><?php echo TABLE_HEADING_TXT_STARTDATE . xtc_sorting(FILENAME_CUSTOMER_NOTICES, 'startdate'); ?></td>
-            <td class="dataTableHeadingContent"><?php echo TABLE_HEADING_TXT_ENDDATE . xtc_sorting(FILENAME_CUSTOMER_NOTICES, 'enddate'); ?></td>
-            <td class="dataTableHeadingContent"><?php echo TABLE_HEADING_TXT_TEMPLATE . xtc_sorting(FILENAME_CUSTOMER_NOTICES, 'template'); ?></td>
-            <td class="dataTableHeadingContent"><?php echo TABLE_HEADING_TXT_CUSTOMERS_STATUS; ?></td>
-            <td class="dataTableHeadingContent"><?php echo TABLE_HEADING_TXT_PAGES; ?></td>
-            <td class="dataTableHeadingContent" colspan="2"><?php echo TABLE_HEADING_TXT_COUNTRIES; //new feature, 10-2021, noRiddle?></td>
-          </tr>
-          <?php
-            $search = '';
-            if(isset($_GET['search']) && (xtc_not_null($_GET['search'])))
-            {
-              $keywords = xtc_db_input(xtc_db_prepare_input($_GET['search']));
-              $search   = " WHERE cnd.title LIKE '%".$keywords."%'";
-            }
-            
-            if(isset($_GET['status']) && (xtc_not_null($_GET['status'])))
-            {
-              $search .= ('' == $search ? " WHERE" : " AND") . " cn.status = ".(int)$_GET['status'];
-            }
+        <?php } else { ?>
+          <table class="tableCenter">
+            <tr>
+              <td class="boxCenterLeft">
+                <div class="bx-headboard bx-headboard--with-search">
+                  <div class="main"><strong><?php echo TEXT_SEARCH_FILTERS; ?></strong></div>
+                  <div class="main">
+                    <?php echo xtc_draw_form('status', FILENAME_CUSTOMER_NOTICES, '', 'get'); ?>
+                    <?php
+                    $select_data = array(
+                      array('id' => '', 'text' => TEXT_ALL),
+                      array('id' => '1', 'text' => TEXT_ACTIVE),
+                      array('id' => '0', 'text' => TEXT_INACTIVE),
+                    );
+                    echo HEADING_BX_TITLE_STATUS . ' ';
+                    echo xtc_draw_pull_down_menu('status', $select_data, isset($_GET['status']) ? $_GET['status'] : '', 'onchange="this.form.submit();" style="min-width: 150px;"') . '</form>';
+                    ?>
+                  </div>
+                  <div class="main">
+                    <?php
+                    echo xtc_draw_form('search', FILENAME_CUSTOMER_NOTICES, '', 'get') . HEADING_BX_TITLE_SEARCH . ' ' . xtc_draw_input_field('search', isset($_GET['search']) ? $_GET['search'] : '') . '</form>';
+                    ?>
+                  </div>
+                </div>
+                <table class="tableBoxCenter collapse">
+                  <tr class="dataTableHeadingRow">
+                    <td class="dataTableHeadingContent">
+                      <div class="bx-sorting-grid">
+                      <?php 
+                      echo '<span>' . TABLE_HEADING_TXT_ID. '</span>' . bx_sorting(FILENAME_CUSTOMER_NOTICES, 'customer_notice_id');
+                      ?>
+                      </div>
+                    </td>
+                    <td class="dataTableHeadingContent">
+                      <div class="bx-sorting-grid">
+                      <?php echo '<span>' . TABLE_HEADING_TXT_TITLE. '</span>' . bx_sorting(FILENAME_CUSTOMER_NOTICES, 'title'); ?>
+                      </div>
+                    </td>
+                    <td class="dataTableHeadingContent">
+                      <div class="bx-sorting-grid">
+                      <?php echo '<span>' . TABLE_HEADING_TXT_STATUS. '</span>' . bx_sorting(FILENAME_CUSTOMER_NOTICES, 'status'); ?>
+                      </div>
+                    </td>
+                    <td class="dataTableHeadingContent" colspan="2">
+                      <div class="bx-sorting-grid">
+                      <?php echo '<span>' . TABLE_HEADING_TXT_POSITION. '</span>' . bx_sorting(FILENAME_CUSTOMER_NOTICES, 'position'); ?>
+                      </div>
+                    </td>
+                    <td class="dataTableHeadingContent">
+                      <div class="bx-sorting-grid">
+                      <?php echo '<span>' . TABLE_HEADING_TXT_STARTDATE. '</span>' . bx_sorting(FILENAME_CUSTOMER_NOTICES, 'startdate'); ?>
+                      </div>
+                    </td>
+                    <td class="dataTableHeadingContent">
+                      <div class="bx-sorting-grid">
+                      <?php echo '<span>' . TABLE_HEADING_TXT_ENDDATE. '</span>' . bx_sorting(FILENAME_CUSTOMER_NOTICES, 'enddate'); ?>
+                      </div>
+                    </td>
+                    <td class="dataTableHeadingContent">
+                      <div class="bx-sorting-grid">
+                      <?php echo '<span>' . TABLE_HEADING_TXT_TEMPLATE. '</span>' . bx_sorting(FILENAME_CUSTOMER_NOTICES, 'template'); ?>
+                      </div>
+                    </td>
+                    <td class="dataTableHeadingContent"><?php echo TABLE_HEADING_TXT_CUSTOMERS_STATUS; ?></td>
+                    <td class="dataTableHeadingContent"><?php echo TABLE_HEADING_TXT_PAGES; ?></td>
+                    <td class="dataTableHeadingContent" colspan="2"><?php echo TABLE_HEADING_TXT_COUNTRIES; //new feature, 10-2021, noRiddle
+                                                                    ?></td>
+                  </tr>
+                  <?php
+                  $search = '';
+                  if (isset($_GET['search']) && (xtc_not_null($_GET['search']))) {
+                    $keywords = xtc_db_input(xtc_db_prepare_input($_GET['search']));
+                    $search   = " WHERE cnd.title LIKE '%" . $keywords . "%'";
+                  }
 
-            $sort = '';
-            $allowedSortFields = array(
-              'customer_notice_id' => 'cn.customer_notice_id',
-              'title' => 'cnd.title',
-              'status' => 'cn.status',
-              'position' => 'cn.position',
-              'startdate' => 'cn.startdate',
-              'enddate' => 'cn.enddate',
-              'template' => 'cn.template',
-            );
-            if (!isset($_GET['sorting']) || !xtc_not_null($_GET['sorting']))
-            {
-              $_GET['sorting'] = 'position';
-            }
+                  if (isset($_GET['status']) && (xtc_not_null($_GET['status']))) {
+                    $search .= ('' == $search ? " WHERE" : " AND") . " cn.status = " . (int)$_GET['status'];
+                  }
 
-            $desc = '-desc' == substr($_GET['sorting'], -5);
-            $sortKey = preg_replace('#-desc$#', '', (string) $_GET['sorting']);
-            if (!isset($allowedSortFields[$sortKey])) {
-              $sortKey = 'position';
-            }
-            $sort = ' ORDER BY ' . $allowedSortFields[$sortKey] . ($desc ? ' DESC' : ' ASC');
+                  $sort = '';
+                  $allowedSortFields = array(
+                    'customer_notice_id' => 'cn.customer_notice_id',
+                    'title' => 'cnd.title',
+                    'status' => 'cn.status',
+                    'position' => 'cn.position',
+                    'startdate' => 'cn.startdate',
+                    'enddate' => 'cn.enddate',
+                    'template' => 'cn.template',
+                  );
+                  if (!isset($_GET['sorting']) || !xtc_not_null($_GET['sorting'])) {
+                    $_GET['sorting'] = 'position';
+                  }
 
-            //secure sql, added int cast to $_SESSION['languages_id'], noRiddle
-            $stmt = "SELECT cn.*, cnd.title, cnd.description
-                       FROM ".TABLE_BX_CUSTOMER_NOTICES." cn
-                  LEFT JOIN ".TABLE_BX_CUSTOMER_NOTICES_DESCRIPTION." cnd
+                  $desc = '-desc' == substr($_GET['sorting'], -5);
+                  $sortKey = preg_replace('#-desc$#', '', (string) $_GET['sorting']);
+                  if (!isset($allowedSortFields[$sortKey])) {
+                    $sortKey = 'position';
+                  }
+                  $sort = ' ORDER BY ' . $allowedSortFields[$sortKey] . ($desc ? ' DESC' : ' ASC');
+
+                  //secure sql, added int cast to $_SESSION['languages_id'], noRiddle
+                  $stmt = "SELECT cn.*, cnd.title, cnd.description
+                       FROM " . TABLE_BX_CUSTOMER_NOTICES . " cn
+                  LEFT JOIN " . TABLE_BX_CUSTOMER_NOTICES_DESCRIPTION . " cnd
                     ON cn.customer_notice_id = cnd.customer_notice_id
-                    AND cnd.languages_id = ".(int)$_SESSION['languages_id']
-                    .$search
-                    .$sort;
+                    AND cnd.languages_id = " . (int)$_SESSION['languages_id']
+                    . $search
+                    . $sort;
 
-            $split = new splitPageResults($_GET['page'], 30, $stmt, $numrows);
+                  $split = new splitPageResults($_GET['page'], 30, $stmt, $numrows);
 
-            $query = xtc_db_query($stmt);
-            
-            $cnInfo = null;
-            while ($row = xtc_db_fetch_array($query))
-            {
-              $rowNoticeId = (int) $row['customer_notice_id'];
-              $rowTitle = encode_htmlspecialchars((string) $row['title']);
-              $rowTemplate = encode_htmlspecialchars((string) $row['template']);
+                  $query = xtc_db_query($stmt);
 
-              //BOC added objectInfo, noRiddle
-              if(($noticeId === 0 || $noticeId == $rowNoticeId) 
-                  && (!isset($cnInfo) && (isset($_GET['action']) ? substr($_GET['action'], 0, 3) != 'new' : true)))
-              {
-                $cnInfo                   = new objectInfo($row);
-                $cnInfo->customers_status = explode(',', $row['customers_status']);
-                $cnInfo->pages            = explode(',', $row['pages']);
-                $cnInfo->countries        = explode(',', $row['countries']); //for new feature "restrict to customer country", 10-2021, noRiddle
-              }
+                  $cnInfo = null;
+                  while ($row = xtc_db_fetch_array($query)) {
+                    $rowNoticeId = (int) $row['customer_notice_id'];
+                    $rowTitle = encode_htmlspecialchars((string) $row['title']);
+                    $rowTemplate = encode_htmlspecialchars((string) $row['template']);
 
-              if((isset(($cnInfo)) && is_object($cnInfo)) && ($rowNoticeId == $cnInfo->customer_notice_id))
-              { //changed to modified standard with objectInfo (see above), noRiddle
-                echo '          <tr class="dataTableRowSelected" onmouseover="this.style.cursor=\'pointer\'" onclick="document.location.href=\'' . xtc_href_link(FILENAME_CUSTOMER_NOTICES, xtc_get_all_get_params(array('nid', 'action')) . 'nid=' . $rowNoticeId . '&action=edit') . '\'">' . PHP_EOL;
-              } else {
-                echo '          <tr class="dataTableRow" onmouseover="this.className=\'dataTableRowOver\'; this.style.cursor=\'pointer\'" onmouseout="this.className=\'dataTableRow\'" onclick="document.location.href=\'' . xtc_href_link(FILENAME_CUSTOMER_NOTICES, xtc_get_all_get_params(array('nid', 'action')) . 'nid=' . $rowNoticeId) . '\'">' . PHP_EOL;
-              }
+                    //BOC added objectInfo, noRiddle
+                    if (($noticeId === 0 || $noticeId == $rowNoticeId)
+                      && (!isset($cnInfo) && (isset($_GET['action']) ? substr($_GET['action'], 0, 3) != 'new' : true))
+                    ) {
+                      $cnInfo                   = new objectInfo($row);
+                      $cnInfo->customers_status = explode(',', $row['customers_status']);
+                      $cnInfo->pages            = explode(',', $row['pages']);
+                      $cnInfo->countries        = explode(',', $row['countries']); //for new feature "restrict to customer country", 10-2021, noRiddle
+                    }
+
+                    if ((isset(($cnInfo)) && is_object($cnInfo)) && ($rowNoticeId == $cnInfo->customer_notice_id)) { //changed to modified standard with objectInfo (see above), noRiddle
+                      echo '          <tr class="dataTableRowSelected" onmouseover="this.style.cursor=\'pointer\'" onclick="document.location.href=\'' . xtc_href_link(FILENAME_CUSTOMER_NOTICES, xtc_get_all_get_params(array('nid', 'action')) . 'nid=' . $rowNoticeId . '&action=edit') . '\'">' . PHP_EOL;
+                    } else {
+                      echo '          <tr class="dataTableRow" onmouseover="this.className=\'dataTableRowOver\'; this.style.cursor=\'pointer\'" onmouseout="this.className=\'dataTableRow\'" onclick="document.location.href=\'' . xtc_href_link(FILENAME_CUSTOMER_NOTICES, xtc_get_all_get_params(array('nid', 'action')) . 'nid=' . $rowNoticeId) . '\'">' . PHP_EOL;
+                    }
+                  ?>
+                    <td class="dataTableContent"><?php echo $rowNoticeId; ?></td>
+                    <td class="dataTableContent"><?php echo $rowTitle; ?></td>
+                    <td class="dataTableContent parent">
+                      <div style="display: flex; gap: 4px; flex-wrap: wrap; justify-content: space-evenly; flex-direction: row;">
+                      <?php
+                      if (1 == (int) $row['status']) {
+                        echo '<span style="align-self: center;">' . xtc_image(DIR_WS_IMAGES . 'icon_status_green.gif', IMAGE_ICON_STATUS_GREEN, 10, 10) . '</span>';
+                        echo '<span style="align-self: center;">' . renderCustomerNoticeActionButton(
+                          array('action' => 'updatestatus', 'flag' => 0, 'nid' => $rowNoticeId),
+                          '<button type="submit" style="border:0;background:none;padding:0;cursor:pointer;margin:0;">' . xtc_image(DIR_WS_IMAGES . 'icon_status_red_light.gif', IMAGE_ICON_STATUS_RED_LIGHT, 10, 10) . '</button>'
+                        ) . '</span>';
+                      } else {
+                        echo '<span style="align-self: center;">' . renderCustomerNoticeActionButton(
+                          array('action' => 'updatestatus', 'flag' => 1, 'nid' => $rowNoticeId),
+                          '<button type="submit" style="border:0;background:none;padding:0;cursor:pointer;margin:0;">' . xtc_image(DIR_WS_IMAGES . 'icon_status_green_light.gif', IMAGE_ICON_STATUS_GREEN_LIGHT, 10, 10) . '</button>'
+                        ) . '</span>';
+                        echo '<span style="align-self: center;">' . xtc_image(DIR_WS_IMAGES . 'icon_status_red.gif', IMAGE_ICON_STATUS_RED, 10, 10) . '</span>';
+                      }
+                      ?>
+                      </div>
+                    </td>
+                    <td class="dataTableContent txta-c"><?php echo $row['position']; ?></td>
+                    <td class="dataTableContent txta-c">
+                      <?php
+                      $position = (int) $row['position'];
+                      $positionControls = ($position < 999)
+                        ? renderCustomerNoticeActionButton(
+                          array('action' => 'posup', 'nid' => $rowNoticeId),
+                          '<button type="submit" style="border:0;background:none;padding:0;cursor:pointer;vertical-align:middle;">' . xtc_image(DIR_WS_IMAGES . 'arrow_up.gif', 'up', 12, 12) . '</button>'
+                        ) : '&nbsp;&nbsp;&nbsp;&nbsp;';
+
+                      if ($position > 1) {
+                        $positionControls .= renderCustomerNoticeActionButton(
+                          array('action' => 'posdown', 'nid' => $rowNoticeId),
+                          '<button type="submit" style="border:0;background:none;padding:0;cursor:pointer;vertical-align:middle;">' . xtc_image(DIR_WS_IMAGES . 'arrow_down.gif', 'down', 12, 12) . '</button>'
+                        );
+                      }
+
+                      echo $positionControls;
+                      ?>
+                    </td>
+                    <td class="dataTableContent"><?php echo formatCustomerNoticeDate($row['startdate']); ?></td>
+                    <td class="dataTableContent"><?php echo formatCustomerNoticeDate($row['enddate']); ?></td>
+                    <td class="dataTableContent"><?php echo $rowTemplate; ?></td>
+                    <td class="dataTableContent">
+                      <?php
+                      $statusNames = array();
+                      foreach (
+                        array_filter(explode(',', $row['customers_status']), static function ($cs) {
+                          return $cs !== '';
+                        }) as $cs
+                      ) {
+                        if (isset($customers_statuses_array[$cs]['text']) && $customers_statuses_array[$cs]['text'] !== '') {
+                          $statusNames[] = $customers_statuses_array[$cs]['text'];
+                        }
+                      }
+
+                      $statusNames = array_filter($statusNames);
+                      echo (count($statusNames) > 0 && count($statusNames) != count($customers_statuses_array)) ? implode(', ', $statusNames) : TEXT_ALL; //noRiddle
+                      ?>
+                    </td>
+                    <td class="dataTableContent">
+                      <?php
+                      if (xtc_not_null($row['pages'])) {
+                        $pages = array();
+                        foreach (explode(',', $row['pages']) as $p) {
+                          $pages[] = constant('FIELD_VALUE_PAGES_' . strtoupper($p));
+                        }
+                        echo implode(', ', $pages);
+                      } else {
+                        echo TEXT_ALL;
+                      }
+                      ?>
+                    </td>
+                    <td class="dataTableContent">
+                      <?php
+                      //BOC for new feature "restrict to customer country", 10-2021, noRiddle
+                      if (xtc_not_null($row['countries'])) {
+                        $countries = array();
+                        foreach (explode(',', $row['countries']) as $cntrid) {
+                          $countries[] = getCustomerNoticeCountryNameById((int)$cntrid);
+                        }
+                        echo implode(', ', $countries);
+                      } else {
+                        echo TEXT_ALL;
+                      }
+                      //EOC for new feature "restrict to customer country", 10-2021, noRiddle
+                      ?>
+                    </td>
+                    <td class="dataTableContent">
+                      <?php
+                      if ((isset($cnInfo) && is_object($cnInfo)) && ($rowNoticeId == $cnInfo->customer_notice_id)) { //changed to modified standard with objectInfo (see above), noRiddle
+                        echo xtc_image(DIR_WS_IMAGES . 'icon_arrow_right.gif', ICON_ARROW_RIGHT);
+                      } else {
+                        echo '<a href="' . xtc_href_link(FILENAME_CUSTOMER_NOTICES, xtc_get_all_get_params(array('nid', 'action')) . 'nid=' . $rowNoticeId) . '">' . xtc_image(DIR_WS_IMAGES . 'icon_arrow_grey.gif', IMAGE_ICON_INFO) . '</a>';
+                      }
+                      ?>
+                    </td>
+            </tr>
+          <?php
+                  } // end while
           ?>
-            <td class="dataTableContent"><?php echo $rowNoticeId; ?></td>
-            <td class="dataTableContent"><?php echo $rowTitle; ?></td>
-            <td class="dataTableContent txta-c">
-            <?php
-              if (1 == (int) $row['status'])
-              {
-                echo xtc_image(DIR_WS_IMAGES . 'icon_status_green.gif', IMAGE_ICON_STATUS_GREEN, 10, 10);
-                echo '&nbsp;&nbsp;';
-                echo renderCustomerNoticeActionButton(
-                  array('action' => 'updatestatus', 'flag' => 0, 'nid' => $rowNoticeId),
-                  '<button type="submit" style="border:0;background:none;padding:0;cursor:pointer;vertical-align:middle;">' . xtc_image(DIR_WS_IMAGES . 'icon_status_red_light.gif', IMAGE_ICON_STATUS_RED_LIGHT, 10, 10) . '</button>'
-                );
-              } else {
-                echo renderCustomerNoticeActionButton(
-                  array('action' => 'updatestatus', 'flag' => 1, 'nid' => $rowNoticeId),
-                  '<button type="submit" style="border:0;background:none;padding:0;cursor:pointer;vertical-align:middle;">' . xtc_image(DIR_WS_IMAGES . 'icon_status_green_light.gif', IMAGE_ICON_STATUS_GREEN_LIGHT, 10, 10) . '</button>'
-                );
-                echo '&nbsp;&nbsp;';
-                echo xtc_image(DIR_WS_IMAGES . 'icon_status_red.gif', IMAGE_ICON_STATUS_RED, 10, 10);
-              }
-            ?>
-            </td>
-            <td class="dataTableContent txta-c"><?php echo $row['position']; ?></td>
-            <td class="dataTableContent txta-c">
-            <?php
-              $position = (int) $row['position'];
-              $positionControls = ($position < 999)
-                ? renderCustomerNoticeActionButton(
-                    array('action' => 'posup', 'nid' => $rowNoticeId),
-                    '<button type="submit" style="border:0;background:none;padding:0;cursor:pointer;vertical-align:middle;">' . xtc_image(DIR_WS_IMAGES . 'arrow_up.gif', 'up', 12, 12) . '</button>'
-                  ) . '&nbsp;'
-                : '&nbsp;&nbsp;&nbsp;&nbsp;';
-
-              if ($position > 1)
-              {
-                $positionControls .= renderCustomerNoticeActionButton(
-                  array('action' => 'posdown', 'nid' => $rowNoticeId),
-                  '<button type="submit" style="border:0;background:none;padding:0;cursor:pointer;vertical-align:middle;">' . xtc_image(DIR_WS_IMAGES . 'arrow_down.gif', 'down', 12, 12) . '</button>'
-                );
-              }
-
-              echo $positionControls;
-            ?>
-            </td>
-            <td class="dataTableContent"><?php echo formatCustomerNoticeDate($row['startdate']); ?></td>
-            <td class="dataTableContent"><?php echo formatCustomerNoticeDate($row['enddate']); ?></td>
-            <td class="dataTableContent"><?php echo $rowTemplate; ?></td>
-            <td class="dataTableContent">
-            <?php
-              $statusNames = array();
-              foreach (array_filter(explode(',', $row['customers_status']), static function ($cs) {
-                return $cs !== '';
-              }) as $cs)
-              {
-                if (isset($customers_statuses_array[$cs]['text']) && $customers_statuses_array[$cs]['text'] !== '')
-                {
-                  $statusNames[] = $customers_statuses_array[$cs]['text'];
-                }
-              }
-
-              $statusNames = array_filter($statusNames);
-              echo (count($statusNames) > 0 && count($statusNames) != count($customers_statuses_array)) ? implode(', ', $statusNames) : TEXT_ALL; //noRiddle
-            ?>
-            </td>
-            <td class="dataTableContent">
-            <?php
-              if (xtc_not_null($row['pages']))
-              {
-                $pages = array();
-                foreach (explode(',', $row['pages']) as $p)
-                {
-                  $pages[] = constant('FIELD_VALUE_PAGES_' . strtoupper($p));
-                }
-                echo implode(', ', $pages);
-              } else {
-                echo TEXT_ALL;
-              }
-            ?>
-            </td>
-            <td class="dataTableContent">
-            <?php
-              //BOC for new feature "restrict to customer country", 10-2021, noRiddle
-              if(xtc_not_null($row['countries']))
-              {
-                $countries = array();
-                foreach(explode(',', $row['countries']) as $cntrid)
-                {
-                  $countries[] = getCustomerNoticeCountryNameById((int)$cntrid);
-                }
-                echo implode(', ', $countries);
-              } else {
-                echo TEXT_ALL;
-              }
-              //EOC for new feature "restrict to customer country", 10-2021, noRiddle
-            ?>
-            </td>
-            <td class="dataTableContent">
-            <?php
-              if((isset($cnInfo) && is_object($cnInfo)) && ($rowNoticeId == $cnInfo->customer_notice_id))
-              { //changed to modified standard with objectInfo (see above), noRiddle
-                echo xtc_image(DIR_WS_IMAGES . 'icon_arrow_right.gif', ICON_ARROW_RIGHT);
-              } else {
-                echo '<a href="' . xtc_href_link(FILENAME_CUSTOMER_NOTICES, xtc_get_all_get_params(array('nid', 'action')) . 'nid=' . $rowNoticeId) . '">' . xtc_image(DIR_WS_IMAGES . 'icon_arrow_grey.gif', IMAGE_ICON_INFO) . '</a>';
-              }
-            ?>
-            </td>
-          </tr>
-<?php
-            } // end while
-?>
           </table>
           <div class="clear"></div>
           <div class="pdg2 flt-r smallText">
             <?php
-              if (!isset($action) || !in_array($action, array('new', 'edit')))
-              {
+            if (!isset($action) || !in_array($action, array('new', 'edit'))) {
             ?>
-            <a class="button" onclick="this.blur();" href="<?php echo xtc_href_link(FILENAME_CUSTOMER_NOTICES); ?>?action=new"><?php echo BUTTON_CREATE_NOTICE; ?></a>
+              <a class="button" onclick="this.blur();" href="<?php echo xtc_href_link(FILENAME_CUSTOMER_NOTICES); ?>?action=new"><?php echo BUTTON_CREATE_NOTICE; ?></a>
             <?php
-              }
+            }
             ?>
           </div>
-        </td>
-<?php
-  $heading = array();
-  $contents = array();
+      </td>
+      <?php
+          $heading = array();
+          $contents = array();
 
-  switch ($action) {
-    case 'delete':
-      if (is_object($cnInfo)) {
-        $noticeTitle = encode_htmlspecialchars((string) $cnInfo->title);
-        $heading[]  = array('text' => '<b>' . HEADING_BX_BOX_TITLE_DELETE . '</b>');
-        
-        $contents[] = array('text' => sprintf(TEXT_DELETE_NOTICE_CONFIRM, $noticeTitle)); //$notice
-        
-				$buttons[]  = '<a class="button" onclick="this.blur()" href="' . xtc_href_link(FILENAME_CUSTOMER_NOTICES, xtc_get_all_get_params(array('nid', 'action')) . 'nid=' . $cnInfo->customer_notice_id) . '">' . BUTTON_CANCEL . '</a>';
-				$buttons[]  = renderCustomerNoticeActionButton(
-				  array('action' => 'delete-confirm', 'nid' => (int) $cnInfo->customer_notice_id),
-				  '<button type="submit" class="button" onclick="this.blur()">' . BUTTON_DELETE_NOTICE_CONFIRMATION . '</button>'
-				); //objectinfo, noRiddle
-				$contents[] = array(
-				  'align' => 'center',
-					'text' => implode(' ', $buttons)
-				);
-			}
-      break;
+          switch ($action) {
+            case 'delete':
+              if (is_object($cnInfo)) {
+                $noticeTitle = encode_htmlspecialchars((string) $cnInfo->title);
+                $heading[]  = array('text' => '<b>' . HEADING_BX_BOX_TITLE_DELETE . '</b>');
 
-      default:
-        if(is_object($cnInfo))
-        {
-          $noticeTitle = encode_htmlspecialchars((string) $cnInfo->title);
-          $noticeTemplate = encode_htmlspecialchars((string) $cnInfo->template);
-          $heading[]  = array('text' => '<b>' . sprintf(HEADING_BX_BOX_TITLE_DEFAULT,  $noticeTitle). '</b>');
-          $contents[] = array('text' => '<strong>'.LABEL_TXT_STATUS.'</strong> '.(1 == (int) $cnInfo->status ? YES : NO));
-          $contents[] = array('text' => '<strong>'.LABEL_TXT_POSITION.'</strong> '.$cnInfo->position);
-          $contents[] = array('text' => '<strong>'.LABEL_TXT_STARTDATE.'</strong> '.formatCustomerNoticeDate($cnInfo->startdate));
-          $contents[] = array('text' => '<strong>'.LABEL_TXT_ENDDATE.'</strong> '.formatCustomerNoticeDate($cnInfo->enddate));
-          $contents[] = array('text' => '<strong>'.LABEL_TXT_TEMPLATE.'</strong> '.$noticeTemplate);
-          $hasRestrictedCustomer = ($cnInfo->customers_id != 0 && $cnInfo->customers_id != '');
-          $contents[] = array('text' => '<strong>'.LABEL_TXT_CUSTOMERS_ID.'</strong> '.($hasRestrictedCustomer ? encode_htmlspecialchars(getCustomerNoticeCustomerAdminDisplay((int) $cnInfo->customers_id)) : ''));
+                $contents[] = array('text' => sprintf(TEXT_DELETE_NOTICE_CONFIRM, $noticeTitle)); //$notice
 
-          if ($hasRestrictedCustomer)
-          {
-            $contents[] = array('text' => '<strong>' . LABEL_TXT_CUSTOMERS_GROUPS . '</strong> ' . TEXT_CUSTOMER_NOTICES_OVERRIDDEN_BY_CUSTOMER_ID);
-          } else {
-            $groups = array();
-            foreach($cnInfo->customers_status as $cs) {
-              if (isset($customers_statuses_array[$cs]['text']) && $customers_statuses_array[$cs]['text'] !== '') {
-                $groups[] = $customers_statuses_array[$cs]['text'];
+                $buttons[]  = '<a class="button" onclick="this.blur()" href="' . xtc_href_link(FILENAME_CUSTOMER_NOTICES, xtc_get_all_get_params(array('nid', 'action')) . 'nid=' . $cnInfo->customer_notice_id) . '">' . BUTTON_CANCEL . '</a>';
+                $buttons[]  = renderCustomerNoticeActionButton(
+                  array('action' => 'delete-confirm', 'nid' => (int) $cnInfo->customer_notice_id),
+                  '<button type="submit" class="button" onclick="this.blur()">' . BUTTON_DELETE_NOTICE_CONFIRMATION . '</button>'
+                ); //objectinfo, noRiddle
+                $contents[] = array(
+                  'align' => 'center',
+                  'text' => implode(' ', $buttons)
+                );
               }
-            }
-            $groups = array_filter($groups);
-            $contents[] = array('text' => '<strong>' . LABEL_TXT_CUSTOMERS_GROUPS . '</strong> ' . (count($groups) > 0 && count($groups) != count($customers_statuses_array) ? '<br /> - ' . implode('<br /> - ', $groups) : TEXT_ALL)); //noRiddle
-          }
-          $pages = array();
-          foreach (array_filter($cnInfo->pages) as $p)
-          {
-            $pages[] = constant('FIELD_VALUE_PAGES_' . strtoupper($p));
-          }
-          $contents[] = array('text' => '<strong>' . LABEL_TXT_PAGES . '</strong> ' . (count($pages) ? '<br /> - ' . implode('<br /> - ', $pages) : TEXT_ALL));
+              break;
 
-          if ($hasRestrictedCustomer)
-          {
-            $contents[] = array('text' => '<strong>' . LABEL_TXT_COUNTRIES . '</strong> ' . TEXT_CUSTOMER_NOTICES_OVERRIDDEN_BY_CUSTOMER_ID);
+            default:
+              if (is_object($cnInfo)) {
+                $noticeTitle = encode_htmlspecialchars((string) $cnInfo->title);
+                $noticeTemplate = encode_htmlspecialchars((string) $cnInfo->template);
+                $heading[]  = array('text' => '<b>' . sprintf(HEADING_BX_BOX_TITLE_DEFAULT,  $noticeTitle) . '</b>');
+                $contents[] = array('text' => '<strong>' . LABEL_TXT_STATUS . '</strong> ' . (1 == (int) $cnInfo->status ? YES : NO));
+                $contents[] = array('text' => '<strong>' . LABEL_TXT_POSITION . '</strong> ' . $cnInfo->position);
+                $contents[] = array('text' => '<strong>' . LABEL_TXT_STARTDATE . '</strong> ' . formatCustomerNoticeDate($cnInfo->startdate));
+                $contents[] = array('text' => '<strong>' . LABEL_TXT_ENDDATE . '</strong> ' . formatCustomerNoticeDate($cnInfo->enddate));
+                $contents[] = array('text' => '<strong>' . LABEL_TXT_TEMPLATE . '</strong> ' . $noticeTemplate);
+                $hasRestrictedCustomer = ($cnInfo->customers_id != 0 && $cnInfo->customers_id != '');
+                $contents[] = array('text' => '<strong>' . LABEL_TXT_CUSTOMERS_ID . '</strong> ' . ($hasRestrictedCustomer ? encode_htmlspecialchars(getCustomerNoticeCustomerAdminDisplay((int) $cnInfo->customers_id)) : ''));
+
+                if ($hasRestrictedCustomer) {
+                  $contents[] = array('text' => '<strong>' . LABEL_TXT_CUSTOMERS_GROUPS . '</strong> ' . TEXT_CUSTOMER_NOTICES_OVERRIDDEN_BY_CUSTOMER_ID);
+                } else {
+                  $groups = array();
+                  foreach ($cnInfo->customers_status as $cs) {
+                    if (isset($customers_statuses_array[$cs]['text']) && $customers_statuses_array[$cs]['text'] !== '') {
+                      $groups[] = $customers_statuses_array[$cs]['text'];
+                    }
+                  }
+                  $groups = array_filter($groups);
+                  $contents[] = array('text' => '<strong>' . LABEL_TXT_CUSTOMERS_GROUPS . '</strong> ' . (count($groups) > 0 && count($groups) != count($customers_statuses_array) ? '<br /> - ' . implode('<br /> - ', $groups) : TEXT_ALL)); //noRiddle
+                }
+                $pages = array();
+                foreach (array_filter($cnInfo->pages) as $p) {
+                  $pages[] = constant('FIELD_VALUE_PAGES_' . strtoupper($p));
+                }
+                $contents[] = array('text' => '<strong>' . LABEL_TXT_PAGES . '</strong> ' . (count($pages) ? '<br /> - ' . implode('<br /> - ', $pages) : TEXT_ALL));
+
+                if ($hasRestrictedCustomer) {
+                  $contents[] = array('text' => '<strong>' . LABEL_TXT_COUNTRIES . '</strong> ' . TEXT_CUSTOMER_NOTICES_OVERRIDDEN_BY_CUSTOMER_ID);
+                } else {
+                  $countries_arr = array();
+
+                  foreach (array_filter($cnInfo->countries) as $ccntr) {
+                    $countries_arr[] = getCustomerNoticeCountryNameById((int)$ccntr);
+                  }
+                  $contents[] = array('text' => '<strong>' . LABEL_TXT_COUNTRIES . '</strong> ' . (count($countries_arr) ? '<br /> - ' . implode('<br /> - ', $countries_arr) : TEXT_ALL));
+                }
+
+                $contents[] = array('text' => '<strong>' . LABEL_TXT_DESCRIPTION . '</strong><br />' . nl2br((strlen(strip_tags($cnInfo->description)) > 30 ? substr(strip_tags($cnInfo->description), 0, 30) . ' ...' : strip_tags($cnInfo->description))));
+                $buttons = array();
+                $buttons[] = '<a class="button" onclick="this.blur()" href="' . xtc_href_link(FILENAME_CUSTOMER_NOTICES, xtc_get_all_get_params(array('nid', 'action')) . 'nid=' . $cnInfo->customer_notice_id . '&action=edit') . '">' . BUTTON_EDIT_NOTICE . '</a>';
+                $buttons[] = '<a class="button" onclick="this.blur()" href="' . xtc_href_link(FILENAME_CUSTOMER_NOTICES, xtc_get_all_get_params(array('nid', 'action')) . 'nid=' . $cnInfo->customer_notice_id . '&action=delete') . '">' . BUTTON_DELETE_NOTICE . '</a>';
+                $contents[] = array(
+                  'align' => 'center',
+                  'text' => implode(' ', $buttons)
+                );
+              }
+              break;
+          }
+          // display box
+          if ((xtc_not_null($heading)) && (xtc_not_null($contents))) {
+            echo '        <td class="boxRight">' . PHP_EOL;
+            $box = new box;
+            echo $box->infoBox($heading, $contents);
+            echo '        </td>' . PHP_EOL;
           } else {
-            $countries_arr = array();
+            $heading[]  = array('text' => '<b>' . HEADING_BX_TITLE . '</b>');
+            $contents[] = array('text' => TEXT_NO_CUSTOMER_NOTICES);
 
-            foreach(array_filter($cnInfo->countries) as $ccntr)
-            {
-              $countries_arr[] = getCustomerNoticeCountryNameById((int)$ccntr);
-            }
-            $contents[] = array('text' => '<strong>' . LABEL_TXT_COUNTRIES . '</strong> ' . (count($countries_arr) ? '<br /> - ' . implode('<br /> - ', $countries_arr) : TEXT_ALL));
+            echo '        <td class="boxRight">' . PHP_EOL;
+            $box = new box;
+            echo $box->infoBox($heading, $contents);
+            echo '        </td>' . PHP_EOL;
           }
-          
-          $contents[] = array('text' => '<strong>' . LABEL_TXT_DESCRIPTION . '</strong><br />' . nl2br((strlen(strip_tags($cnInfo->description)) > 30 ? substr(strip_tags($cnInfo->description),0,30).' ...' : strip_tags($cnInfo->description))));
-          $buttons = array();
-          $buttons[] = '<a class="button" onclick="this.blur()" href="' . xtc_href_link(FILENAME_CUSTOMER_NOTICES, xtc_get_all_get_params(array('nid', 'action')) . 'nid=' . $cnInfo->customer_notice_id . '&action=edit') . '">' . BUTTON_EDIT_NOTICE . '</a>';
-          $buttons[] = '<a class="button" onclick="this.blur()" href="' . xtc_href_link(FILENAME_CUSTOMER_NOTICES, xtc_get_all_get_params(array('nid', 'action')) . 'nid=' . $cnInfo->customer_notice_id . '&action=delete') . '">' . BUTTON_DELETE_NOTICE . '</a>';
-          $contents[] = array(
-            'align' => 'center',
-            'text' => implode(' ', $buttons)
-          );
-        }
-        break;
-      }
-      // display box
-			if ( (xtc_not_null($heading)) && (xtc_not_null($contents)) ) {
-				echo '        <td class="boxRight">' . PHP_EOL;
-				$box = new box;
-				echo $box->infoBox($heading, $contents);
-				echo '        </td>' . PHP_EOL;
-      } else {
-        $heading[]  = array('text' => '<b>' . HEADING_BX_TITLE . '</b>');
-        $contents[] = array('text' => TEXT_NO_CUSTOMER_NOTICES);
-
-				echo '        <td class="boxRight">' . PHP_EOL;
-				$box = new box;
-				echo $box->infoBox($heading, $contents);
-				echo '        </td>' . PHP_EOL;
-      }
+      ?>
+    </tr>
+  </table>
+<?php } // end of if-else (in_array($action, array('new', 'edit'))) 
 ?>
-      </tr>
-    </table>
-<?php } // end of if-else (in_array($action, array('new', 'edit'))) ?>
 
-    </td>
-    <!-- body_text_eof //-->
-  </tr>
+</td>
+<!-- body_text_eof //-->
+</tr>
 </table>
-    <!-- body_eof //-->
-    <!-- footer //-->
-    <?php require(DIR_WS_INCLUDES . 'footer.php'); ?>
-    <!-- footer_eof //-->
-    </body>
+<!-- body_eof //-->
+<!-- footer //-->
+<?php require(DIR_WS_INCLUDES . 'footer.php'); ?>
+<!-- footer_eof //-->
+</body>
+
 </html>
 <?php require(DIR_WS_INCLUDES . 'application_bottom.php'); ?>

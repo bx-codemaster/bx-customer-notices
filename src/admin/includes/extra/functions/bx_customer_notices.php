@@ -223,3 +223,18 @@ if (!function_exists('getCustomerNoticeCustomerSearchResults')) {
 		return $results;
 	}
 }
+/**
+ * bx_sorting()
+ * @param string $page
+ * @param string $sort
+ * @return string (2 sorting arrows)
+ */
+if (!function_exists('bx_sorting')) {
+  function bx_sorting( string $page, string $sort): string {
+    $nav= '<span><a href="'.xtc_href_link($page, xtc_get_all_get_params(array('action','sorting')).'sorting='.$sort).'" title="'.TEXT_SORT_ASC.'">';
+    $nav.= xtc_image(DIR_WS_ICONS . 'sort_up.gif', TEXT_SORT_ASC, '20' ,'20').'</a></span>';
+    $nav.= '<span><a href="'.xtc_href_link($page, xtc_get_all_get_params(array('action','sorting')).'sorting='.$sort.'-desc').'" title="'.TEXT_SORT_DESC.'">';
+    $nav.= xtc_image(DIR_WS_ICONS . 'sort_down.gif', TEXT_SORT_DESC, '20' ,'20').'</a></span>';    
+    return $nav;
+  }
+}

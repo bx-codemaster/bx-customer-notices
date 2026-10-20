@@ -5,12 +5,15 @@
   $customerNoticesUseLangTabs = $customerNoticesIsEdit && (!defined('USE_ADMIN_LANG_TABS') || USE_ADMIN_LANG_TABS != 'false');
 
   if (basename($_SERVER['PHP_SELF']) == 'bx_customer_notices.php') {
+    echo '<link rel="stylesheet" href="includes/javascript/jQueryDateTimePicker/jquery.datetimepicker.css">';
+    if ($customerNoticesUseLangTabs) {
+      echo '<link rel="stylesheet" href="includes/lang_tabs_menu/lang_tabs_menu.css">';
+    }
 ?>
-<link rel="stylesheet" href="includes/javascript/jQueryDateTimePicker/jquery.datetimepicker.css">
-<?php if ($customerNoticesUseLangTabs) { ?>
-<link rel="stylesheet" href="includes/lang_tabs_menu/lang_tabs_menu.css">
-<?php } ?>
 <style>
+  .SumoSelect {
+    color: #000;
+  }
   .select2-dropdown {
     font-family: Verdana, Arial, sans-serif;
     font-size: 12px;
@@ -127,6 +130,23 @@
     min-height: 220px;
   }
 
+  .bx-sorting-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 20px);
+    grid-template-rows: repeat(2, 10px);
+    gap: 0;
+    justify-items: start;
+    align-items: start;
+  }
+
+  .bx-sorting-grid span:first-child {
+    grid-column: span 2 / span 2;
+    text-align: center;
+  }
+
+  .bx-sorting-grid span:not(:first-child) {
+    grid-row-start: 2;
+  }
 <?php echo isset($langtabsCss) ? $langtabsCss : ''; ?>
 </style>
 <link rel="stylesheet" href="includes/extra/css/select2.min.css">

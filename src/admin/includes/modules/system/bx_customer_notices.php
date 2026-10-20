@@ -25,7 +25,7 @@
 
 		public function __construct() {
 			$this->code        = 'bx_customer_notices';
-			$this->version     = '1.2.0';
+			$this->version     = '1.2.5';
 			$this->title       = MODULE_BX_CUSTOMER_NOTICES_TITLE;
 			$this->description = MODULE_BX_CUSTOMER_NOTICES_DESC;
 			$this->sort_order  = defined('MODULE_BX_CUSTOMER_NOTICES_SORT_ORDER') ? MODULE_BX_CUSTOMER_NOTICES_SORT_ORDER : 0;
